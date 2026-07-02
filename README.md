@@ -94,7 +94,7 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 - **Native settings overlay** over the game (`GUI/QuesterOverlay.cs`, `GUI/OverlaySettings.cs`).
 - **Performance logging** — per-label p95/max timing of FSM states and background loops (`Helpers/PerfLog.cs`).
 - **Dev-time enrichment tool** (`tools/generate_classquest_steps.py`).
-- Design notes: `ROADMAP.md`, `ROADMAP-CLASS-QUESTS.md`, `CODE-REVIEW.md`.
+- Design notes: `ROADMAP.md`, `ROADMAP-CLASS-QUESTS.md`.
 
 ---
 
