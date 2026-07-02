@@ -60,6 +60,44 @@ A dark, tabbed settings panel drawn **directly over the game window** (ported fr
 
 ---
 
+## Full list of changes vs. upstream
+
+A granular reference of everything FWAQ changes on top of the base quester (files under `Wholesome_Auto_Quester/` unless noted).
+
+**New quest capability**
+- Class-quest **priority tier** — a dedicated must-do tier below all ordinary tasks (`TaskPriority`, `TaskManager`), so class quests always progress, even across continents.
+- **Use-item quests** — new `Bot/TaskManagement/Tasks/WAQTaskUseItem.cs` + `States/WAQStateUseItem.cs` with the adaptive approach (GoToTask precise → direct `MovementManager.MoveTo` push).
+- An `IsClassQuest` flag threaded through **every** task type (`IWAQTask`, `WAQBaseTask`, all `WAQTask*`).
+
+**New embedded data + loaders**
+- `Database/ClassQuestSteps.json` + `ClassQuestStepsData.cs` — the auto-generated use-item steps.
+- `Database/QuestBlacklist.json` + `QuestBlacklistData.cs` — the blacklist moved **out of code into data**.
+
+**New: an offline-testable core**
+- New project **`Wholesome_Auto_Quester.Logic`** — WRobot-free decision logic extracted so it runs with no game attached: the quest-status ladder, prerequisite checks, chain scoring, task priority (incl. the class-quest tier), task validity, recovery policy.
+- New project **`Wholesome_Auto_Quester.Tests`** — **76 xUnit tests** over that logic.
+
+**Reliability fixes (help every quest, not just class quests)**
+- **Server-confirmed completion** — a quest that leaves the log is only recorded completed if the server's finished-set confirms it (`Helpers/ToolBox.cs`, `QuestManager`); abandoning no longer poisons the completed list and falsely satisfies prerequisites.
+- **Pickup-gossip retry** on spawn delay (`WAQTaskPickupQuestFromCreature`).
+- **Post-loot hold** for script-spawned turn-in objects/NPCs (`States/WAQStateLoot.cs`).
+- **Do-Not-Sell protection** for objective items so the inventory-manager plugin can't delete them (`QuestManager`).
+- **Load-filter fixes** (`Bot/JSONManagement/JSONManager.cs`): class quests are exempt from the neutral/friendly giver-ender strip and correctly class-masked; the "no giver/ender → drop" check now also counts **GameObject** givers/enders (so a GO turn-in isn't dropped).
+- `AbandonUnfitQuests` + blacklist **exemptions** for class-quest steps; a quest-objective-index bounds fix.
+- **Cross-faction leak blacklist** + a low-level **continent-gate exemption** for class quests (`WAQQuest`).
+
+**Planner / navigation**
+- **Bulk / batch questing** — cluster nearby open quest work (~80 y) and finish it before travelling on (`TaskManager`).
+- **"Grab a quest you're walking past"** state — interact with a nearer turn-in / giver while travelling to a distant objective, instead of walking straight past it (`States/WAQStateGrabNearbyQuest.cs`).
+
+**UX / dev tooling**
+- **Native settings overlay** over the game (`GUI/QuesterOverlay.cs`, `GUI/OverlaySettings.cs`).
+- **Performance logging** — per-label p95/max timing of FSM states and background loops (`Helpers/PerfLog.cs`).
+- **Dev-time enrichment tool** (`tools/generate_classquest_steps.py`).
+- Design notes: `ROADMAP.md`, `ROADMAP-CLASS-QUESTS.md`, `CODE-REVIEW.md`.
+
+---
+
 ## Coverage
 
 - **All four shaman totem chains** run automatically: **Earth**, **Fire**, **Water** (full — including the cross-continent zeppelin leg and the script-spawned turn-in NPC at the end); **Air** is handled natively by the base quester.
