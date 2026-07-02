@@ -1,0 +1,91 @@
+# FWAQ — Fun with Wholesome Auto Quester
+
+A community enhancement of **Wholesome Auto Quester** for [WRobot](https://wrobot.eu/) (World of Warcraft **3.3.5a / Wrath of the Lich King**), focused on making **class quests** and **"use an item at a location" quests** run fully automatically — the kind of quests the base quester can't derive on its own.
+
+---
+
+## 🙏 Huge credits to ZerO
+
+FWAQ stands entirely on the shoulders of the original **Wholesome Auto Quester** by **ZerO**:
+
+### 👉 https://github.com/Wholesome-wRobot
+
+Everything that makes the quester actually work — the task engine, travel manager, object scanner, quest state machine, JSON data pipeline, the GUI — is **ZerO's work**. FWAQ is only a layer of extra behaviour and data on top of that foundation. None of this would exist without it. **If you use FWAQ, go support the original project first.** ❤️
+
+---
+
+## What FWAQ adds
+
+The base quester is excellent at "normal" quests (kill, gather, talk, escort). It struggles with quests whose objective **can't be derived from the database** — the classic examples being **class quests** (shaman totems, warlock summons, …) where you have to *use a quest item at a very specific spot*. FWAQ makes those work, **driven entirely by the world database — no hand-tuned coordinates.**
+
+### 1. Class-quest priority ("must-do" tier)
+Class quests unlock core character mechanics (the four shaman totems, warlock pets, …), so FWAQ gives every class quest a dedicated top-priority tier. The bot will always progress the class quest first — **even across continents** — instead of getting distracted by nearby world quests.
+
+### 2. DB-driven "use item at a location" quests
+The core discovery behind FWAQ: **the exact spot where you use a quest item is a GameObject in the DB** — a `SPELL_FOCUS` (type 8) or its paired `GOOBER` (type 10). That's the WoW *"this spell only works near this object"* mechanic (the Spring Well a waterskin is filled at, the Shaman Shrine a sapta is used at, the Summoning Circle a warlock summons on, …).
+
+`quest_poi` alone is only a rough map marker (routinely **18–43 yards off**), so FWAQ uses it purely as a **travel anchor** and then derives the **precise** use-coordinate from the **nearest SPELL_FOCUS/GOOBER GameObject**. Result: sub-yard accuracy across hundreds of quests.
+
+### 3. Adaptive approach (reaching the exact spot)
+Many use-spots are solid world objects (wells, shrines, braziers) whose collision the navmesh stops ~2–3 yards short of. FWAQ's use-item state:
+1. tries the item from where pathing dropped it (~6 y),
+2. if it doesn't take, closes in with `GoToTask.ToPosition(spot, 1f)` (tight precision),
+3. and if the navmesh still stops short, pushes the last yards with a **direct `MovementManager.MoveTo`** (no A\*) right up against the object.
+
+So a slightly-imperfect coordinate self-corrects — which is what makes the DB-derived coordinates viable without hand-tuning.
+
+### 4. Cross-continent / transport quests
+Some class quests legitimately cross continents (the shaman **Water** totem fills a waterskin in **Eastern Kingdoms** via the **Orgrimmar → Undercity zeppelin**, then returns to Kalimdor). FWAQ lets low-level class quests through the continent gate so the existing transport travel actually fires end-to-end.
+
+### 5. Robustness fixes (help *all* quests, not just use-item ones)
+- **False-completion guard** — a quest that leaves the log is only recorded as completed if the **server's finished-set** confirms it. Abandoning a quest no longer poisons the local "completed" list and falsely satisfies downstream prerequisites.
+- **Pickup-gossip retry** — when a freshly-unlocked quest hasn't appeared in an NPC's gossip yet (server chain delay), re-open the gossip and retry a few times instead of benching it for 15 minutes and wandering off.
+- **Post-loot hold** — after a class-quest kill, hold briefly so a **spawned** turn-in object / NPC (e.g. a script-spawned brazier or manifestation) can appear and be scanned before the bot re-evaluates.
+- **Do-Not-Sell protection** — the use-item **and** its result item (e.g. the *Filled* Waterskin) are added to WRobot's Do-Not-Sell list while the quest is active, so the inventory-manager plugin can't delete the objective item as a "deprecated low-level quest item".
+- **Cross-faction leak blacklist** — quests with no race restriction in the exported data that are really faction-locked (via the `conditions` table) no longer drag the bot into the enemy faction's zones.
+
+### 6. Dev-time enrichment tool
+[`tools/generate_classquest_steps.py`](tools/generate_classquest_steps.py) reads the raw AzerothCore world-DB dumps and **generates** the use-item coordinate data. It:
+- detects use-item quests DB-wide (an item with an on-use spell — `spellid_1 > 0 && spelltrigger_1 == 0` — as the quest's SourceItem or the previous quest's reward),
+- finds the nearest `SPELL_FOCUS`/`GOOBER` GameObject to each quest's `quest_poi`,
+- emits the shippable `ClassQuestSteps.json`.
+
+The heavy DB never ships — only the small generated JSON is embedded in the product.
+
+---
+
+## Coverage
+
+- **All four shaman totem chains** run automatically: **Earth**, **Fire**, **Water** (full — including the cross-continent zeppelin leg and the script-spawned turn-in NPC at the end); **Air** is handled natively by the base quester.
+- **47 class use-item quests** shipped in `ClassQuestSteps.json` — across **every class and both factions** (Warlock summons, shaman totems incl. the Draenei/Outland variants, warrior, death knight, rogue, druid, paladin, mage).
+- **814 use-item quests** detected DB-wide by the tool (world quests are staged for a later release, pending a "does the base quester already handle this natively?" filter).
+
+---
+
+## How to use
+
+FWAQ is not a standalone product — it **is** Wholesome Auto Quester with the changes above. Build the solution and drop the compiled product into your WRobot `Products` folder, exactly like the upstream project. See the upstream repo for the base setup.
+
+- `Wholesome_Auto_Quester/` — the WRobot product (with the FWAQ additions)
+- `Wholesome_Auto_Quester.Logic/` — WRobot-free, unit-tested decision logic
+- `Wholesome_Auto_Quester.Tests/` — xUnit tests
+- `Db_To_Json/` — the DB → `AQ.json` generation pipeline
+- `tools/` — the dev-time enrichment tool
+- `ROADMAP.md` / `ROADMAP-CLASS-QUESTS.md` — design notes
+
+---
+
+## Roadmap
+
+1. **`conditions`-table enrichment** — the biggest reliability win: bake the race/faction/prerequisite gating (14k+ rules) into the data so the bot never chases a quest it can't actually take (kills phantom / cross-faction quests DB-wide).
+2. **Ship the ~767 world use-item quests** — same pipeline, once a "the base quester already derives an objective for this" filter is in place to avoid redundant steps.
+3. **Explore / area-trigger quests** — a whole category the base quester currently can't do; the `areatrigger` tables carry the exact coordinates.
+4. **Script-spawned NPC locations** — give temporary turn-in/giver NPCs (no DB spawn) a location from their spawn trigger, for rock-solid chain endings.
+
+---
+
+## Credits & license
+
+- **Original project & all core code:** [ZerO / Wholesome-wRobot](https://github.com/Wholesome-wRobot) — thank you.
+- **FWAQ additions:** Talamin.
+- FWAQ is a derivative work of Wholesome Auto Quester and is shared with the same community-friendly spirit as the original. Please respect the upstream project's terms.

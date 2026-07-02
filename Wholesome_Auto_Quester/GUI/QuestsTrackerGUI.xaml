@@ -1,0 +1,493 @@
+﻿<mah:MetroWindow
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+    x:Class="Wholesome_Auto_Quester.GUI.QuestsTrackerGUI"
+    mc:Ignorable="d"
+    d:DesignHeight="650" d:DesignWidth="520"
+    VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#FF252525"
+    SaveWindowPosition="True"
+    MaxWidth="520"
+    MaxHeight="650"
+    MinWidth="520"
+    MinHeight="650"
+    ResizeMode="NoResize"
+    Title="Wholesome Quest Tracker">
+
+
+    <mah:MetroWindow.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- MahApps.Metro resource dictionaries. Make sure that all file names are Case Sensitive! -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                <!-- Accent and AppTheme setting -->
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Cyan.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </mah:MetroWindow.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Margin="0,13,13,0" 
+                   Grid.ColumnSpan="4"
+                   HorizontalAlignment="Right"
+                   ToolTip="Join us on Discord" >
+            <Hyperlink NavigateUri="https://discord.gg/Hb6Cn5x3"
+                       TextDecorations="None"
+                       Name="DiscordLink">
+                <Image Width="25"
+                   Source="/Wholesome_Auto_Quester;component/Resources/discord-logo.png"/>
+            </Hyperlink>
+        </TextBlock>
+
+        <TextBlock Grid.Row="0" 
+                    Grid.Column="0" 
+                    Margin="15,0,0,0" 
+                    Grid.ColumnSpan="4" 
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Center"  
+                    Text="WHOLESOME AUTO QUESTER" 
+                    FontSize="25" Foreground="#FFC3C3C3" TextDecorations="{x:Null}" FontFamily="Microsoft YaHei UI"  />
+
+        <Separator  Grid.Row="0" 
+                    Grid.Column="0"
+                    Grid.ColumnSpan="4"
+                    Margin="0,50,0,0" />
+
+
+        <TabControl
+            Grid.ColumnSpan="4"
+            HorizontalAlignment="Center" 
+            VerticalAlignment="Top"
+            Margin="10" 
+            Width="500" 
+            Grid.Row="1" 
+            Panel.ZIndex="-2">
+
+            <!-- TAB TRACKER -->
+            <TabItem 
+                Header="Tracker">
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Name="questTitleTop"
+                        Text="Quests"
+                        HorizontalAlignment="Center"
+                        Grid.ColumnSpan="2"
+                        Grid.Row="1"
+                        FontSize="18"
+                        Margin="0,5"/>
+
+                    <ListBox Name="sourceQuestsList" 
+                             HorizontalContentAlignment="Stretch"
+                             Height="475"
+                             Grid.ColumnSpan="2"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             SelectionChanged="SelectQuest"
+                             Grid.Row="2">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <TextBlock 
+                                            Text="{Binding QuestTemplate.LogTitle}"
+                                            Foreground="{Binding TrackerColor}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock 
+                        Text="Details"
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        HorizontalAlignment="Center"
+                        Grid.ColumnSpan="2"
+                        FontSize="18"
+                        Margin="0,5"/>
+
+                    <!-- QUEST DETAILS -->
+                    <Grid
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        Grid.ColumnSpan="2"
+                        Margin="10"
+                        Name="detailsPanel">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock 
+                            Name="questTitle"
+                            TextWrapping="Wrap"
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            Grid.ColumnSpan="2"
+                            Margin="0,5"/>
+
+                        <Separator 
+                            Grid.Row="2"/>
+
+                        <Button Content="Add to BL"
+                                Name="ButtonAddToBl"
+                                Click="AddToBLClicked"
+                                IsEnabled="True"
+                                Grid.Row="3"
+                                Width="100"
+                                Background="#423838"
+                                Margin="10, 5"
+                                FontSize="10"
+                                HorizontalAlignment="Left"/>
+
+                        <Button Content="Rmv from BL"
+                                Name="ButtonRmvFromBl"
+                                Click="RmvFromBLClicked"
+                                Background="#384238"
+                                IsEnabled="True"
+                                Grid.Row="3"
+                                Margin="10, 5"
+                                Width="100"
+                                FontSize="10"
+                                HorizontalAlignment="Right"/>
+
+                        <ScrollViewer 
+                            VerticalScrollBarVisibility="Visible"
+                            Height="390"
+                            Grid.Row="4">
+                            <StackPanel
+                                Grid.Row="4"
+                                Orientation="Vertical"
+                                CanVerticallyScroll="True"
+                                ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                Margin="5">
+
+                                <StackPanel.Resources>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Margin" Value="0,3,0,0"/>
+                                    </Style>
+                                </StackPanel.Resources>
+
+                                <TextBlock 
+                                    Name="blacklisted"
+                                    Foreground="IndianRed"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock 
+                                    Name="questId"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock                                     
+                                    Name="questStatus"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock 
+                                    Name="questLevel"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock 
+                                    Name="questGivers"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock 
+                                    Name="questTurners"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock 
+                                    Name="questPrevious"
+                                    TextWrapping="Wrap"/>
+
+                                <TextBlock 
+                                    Name="questNext"
+                                    TextWrapping="Wrap"/>
+
+                                <StackPanel
+                                    Name="explorations">
+                                    <TextBlock 
+                                        Text="Explorations:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="questGatherObjects">
+                                    <TextBlock 
+                                        Text="Gather:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="questKillCreatures">
+                                    <TextBlock 
+                                        Text="Kill:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="questLootCreatures">
+                                    <TextBlock 
+                                        Text="Kill and Loot:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="interactObjectives">
+                                    <TextBlock 
+                                        Text="Interactions:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="prerequisiteGathers">
+                                    <TextBlock 
+                                        Text="Prerequisite Gathers:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="prerequisiteLoots">
+                                    <TextBlock 
+                                        Text="Prerequisite Loots:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <StackPanel
+                                    Name="objectiveStack">
+                                    <TextBlock 
+                                        Text="Objectives:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+                                
+                                <StackPanel
+                                    Name="dbConditions">
+                                    <TextBlock 
+                                        Text="DB Conditions:"
+                                        Foreground="Aquamarine"
+                                        FontWeight="Bold"
+                                        TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+
+            <!-- TAB TRACKER -->
+            <TabItem Header="Tasks">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Name="tasksTitleTop"
+                        Text="Current Tasks"
+                        HorizontalAlignment="Center"
+                        Grid.Row="0"
+                        FontSize="18"
+                        Margin="0,5"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Height="475" Grid.Row="1">
+                        <ItemsControl Name="sourceTasksList" 
+                             MinHeight="50"
+                             HorizontalContentAlignment="Stretch"
+                             VerticalAlignment="Top"
+                             Height="Auto"
+                             Grid.Row="1">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Priority}"
+                                               Foreground="{Binding TrackerColor}"
+                                               HorizontalAlignment="Left"
+                                               Margin="0,0,10,0"
+                                               Grid.Column="0"
+                                               TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding TaskName}"
+                                               Foreground="{Binding TrackerColor}"
+                                               HorizontalAlignment="Left"
+                                               Grid.Column="1"
+                                               TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="ScanReg">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Text="Scanner registry"
+                        HorizontalAlignment="Center"
+                        Grid.Row="0"
+                        FontSize="18"
+                        Margin="0,5"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Height="475" Grid.Row="1">
+                        <ItemsControl Name="sourceScanReg" 
+                             MinHeight="50"
+                             HorizontalContentAlignment="Stretch"
+                             VerticalAlignment="Top"
+                             Height="Auto"
+                             Grid.Row="1">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding ObjectId}"
+                                               Foreground="HotPink"
+                                               HorizontalAlignment="Left"
+                                               Margin="0,0,5,0"
+                                               Grid.Column="0"
+                                               TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding TaskName}"
+                                               Foreground="Bisque"
+                                               HorizontalAlignment="Left"
+                                               Margin="0,0,5,0"
+                                               Grid.Column="1"
+                                               TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Amount, StringFormat=' {0} / '}"
+                                               Foreground="PowderBlue"
+                                               HorizontalAlignment="Left"
+                                               Grid.Column="0"
+                                               TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding AmountInvalid}"
+                                               Foreground="Gray"
+                                               HorizontalAlignment="Left"
+                                               Grid.Column="0"
+                                               TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Invalids">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <TextBlock
+                        Text="Invalid tasks"
+                        Name="invalidsTitleTop"
+                        HorizontalAlignment="Center"
+                        Grid.Row="0"
+                        FontSize="18"
+                        Margin="0,5"/>
+                    <ScrollViewer VerticalScrollBarVisibility="Visible" Height="475" Grid.Row="1">
+                        <ItemsControl Name="sourceInvalids" 
+                             MinHeight="50"
+                             HorizontalContentAlignment="Stretch"
+                             VerticalAlignment="Top"
+                             Height="Auto"
+                             Grid.Row="1">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TaskName}"
+                                               Foreground="Bisque"
+                                               HorizontalAlignment="Left"
+                                               Margin="0,0,5,0"
+                                               Grid.Column="1"
+                                               TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding InvalidityReason}"
+                                               Foreground="PowderBlue"
+                                               HorizontalAlignment="Left"
+                                               Grid.Column="0"
+                                               TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</mah:MetroWindow>
