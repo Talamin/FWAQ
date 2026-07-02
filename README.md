@@ -52,6 +52,12 @@ Some class quests legitimately cross continents (the shaman **Water** totem fill
 
 The heavy DB never ships — only the small generated JSON is embedded in the product.
 
+### 7. Bulk / batch questing
+The planner counts open quest work near the player (within ~80 yards) and, when there's more to do right there, **defers a turn-in so the bot finishes the whole cluster before travelling on** — far fewer wasted round-trips across a zone. Class-quest turn-ins are **exempt** from the batching, so a totem/summon quest is always handed in immediately.
+
+### 8. Native settings overlay
+A dark, tabbed settings panel drawn **directly over the game window** (ported from the AIO3 fightclass overlay, with a green accent instead of blue). You change quester settings in-game without touching WoW's Lua/UI — edits are two-way bound, persist, and apply on the next planner cycle. It runs on its own STA thread, tracks the WoW window, and gracefully falls back to the normal config window if WPF can't start. Its window is decoupled from the fightclass overlay, so both can sit side by side.
+
 ---
 
 ## Coverage
