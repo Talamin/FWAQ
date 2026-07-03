@@ -1,6 +1,6 @@
 # FWAQ — Fun with Wholesome Auto Quester
 
-A community enhancement of **Wholesome Auto Quester** for [WRobot](https://wrobot.eu/) (World of Warcraft **3.3.5a / Wrath of the Lich King**), focused on making **class quests** and **"use an item at a location" quests** run fully automatically — the kind of quests the base quester can't derive on its own.
+A community enhancement of **Wholesome Auto Quester** for [WRobot](https://wrobot.eu/) (World of Warcraft **3.3.5a / Wrath of the Lich King**), focused on making **class quests**, **"use an item at a location" quests**, and **"use an item on a creature" quests** run fully automatically — the kind of quests the base quester can't derive on its own.
 
 ---
 
@@ -43,12 +43,16 @@ Some class quests legitimately cross continents (the shaman **Water** totem fill
 - **Post-loot hold** — after a class-quest kill, hold briefly so a **spawned** turn-in object / NPC (e.g. a script-spawned brazier or manifestation) can appear and be scanned before the bot re-evaluates.
 - **Do-Not-Sell protection** — the use-item **and** its result item (e.g. the *Filled* Waterskin) are added to WRobot's Do-Not-Sell list while the quest is active, so the inventory-manager plugin can't delete the objective item as a "deprecated low-level quest item".
 - **Cross-faction leak blacklist** — quests with no race restriction in the exported data that are really faction-locked (via the `conditions` table) no longer drag the bot into the enemy faction's zones.
+- **Turn-in before pickup at a shared NPC** — when one NPC both **ends** one quest and **starts** the next (e.g. Gornek: "Your Place in the World" → "Cutting Teeth"), the scanner now always actions the **turn-in first**. Previously the two tasks tied on distance and the pickup could win, looping "Failed to pick up" forever because the follow-up isn't offered until the first is handed in.
+- **In-log ⇒ not completed** — a quest currently in your log can never count as a completed prerequisite, even if a persisted "completed" list (kept per character but surviving across runs / re-created same-name alts) still lists it. Stops a fresh alt from thinking the next quest in a chain is already unlocked.
+- **No pickup of an already-taken/completed quest** — a quest-giver pickup task is invalidated the moment you hold or have finished that quest, so a stale task left on a shared giver can't be re-selected and loop.
 
 ### 6. Dev-time enrichment tool
 [`tools/generate_classquest_steps.py`](tools/generate_classquest_steps.py) reads the raw AzerothCore world-DB dumps and **generates** the use-item coordinate data. It:
 - detects use-item quests DB-wide (an item with an on-use spell — `spellid_1 > 0 && spelltrigger_1 == 0` — as the quest's SourceItem or the previous quest's reward),
 - finds the nearest `SPELL_FOCUS`/`GOOBER` GameObject to each quest's `quest_poi`,
-- emits the shippable `ClassQuestSteps.json`.
+- and (companion generator) detects **"use item on a creature"** quests — an on-use item + a `RequiredNpcOrGo` creature that spawns in the world — validated against the exported `AQ.json` so only targets the quester can actually see are shipped,
+- emits the shippable `QuestSteps.json`.
 
 The heavy DB never ships — only the small generated JSON is embedded in the product.
 
@@ -57,6 +61,13 @@ The planner counts open quest work near the player (within ~80 yards) and, when 
 
 ### 8. Native settings overlay
 A dark, tabbed settings panel drawn **directly over the game window** (ported from the AIO3 fightclass overlay, with a green accent instead of blue). You change quester settings in-game without touching WoW's Lua/UI — edits are two-way bound, persist, and apply on the next planner cycle. It runs on its own STA thread, tracks the WoW window, and gracefully falls back to the normal config window if WPF can't start. Its window is decoupled from the fightclass overlay, so both can sit side by side.
+
+### 9. DB-driven "use item ON a creature" quests (incl. friendly NPCs)
+The third member of the use-item family: quests where you **use a quest item on a target creature** — *Morbent's Bane on Morbent Fel*, a net on a critter, or the classic **"Lazy Peons"** (whack sleeping peons with the Foreman's Blackjack). FWAQ derives these DB-wide (an on-use item + a `RequiredNpcOrGo` creature that actually spawns in the world) and drives them with a dedicated scanner task that approaches the target, uses the item, then hands off.
+
+Two runtime paths, chosen automatically per target:
+- **Attackable target** → use the item, then the normal kill/loot flow finishes it.
+- **Friendly / non-attackable target** (e.g. a sleeping peon) → a subtle gap the base quester **can't** cover: it only builds a kill-objective for *attackable* creatures, so a friendly target gets no objective at all and is silently ignored. FWAQ generates the task **straight from the step data + the creature's spawns**, uses the item, and **briefly blacklists each awakened target's GUID** so the bot moves on to the next *sleeping* one instead of re-hitting an already-credited peon.
 
 ---
 
@@ -67,10 +78,11 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 **New quest capability**
 - Class-quest **priority tier** — a dedicated must-do tier below all ordinary tasks (`TaskPriority`, `TaskManager`), so class quests always progress, even across continents.
 - **Use-item quests** — new `Bot/TaskManagement/Tasks/WAQTaskUseItem.cs` + `States/WAQStateUseItem.cs` with the adaptive approach (GoToTask precise → direct `MovementManager.MoveTo` push).
+- **Use-item-on-creature quests** — new `Bot/TaskManagement/Tasks/WAQTaskUseItemOnCreature.cs` + `States/WAQStateUseItemOnCreature.cs`; the scanner task starts in a `UseItemOnTarget` interaction and, after the item lands, either flips to kill/loot (attackable) or blacklists the credited target and moves on (friendly). Friendly targets are generated straight from the step + `RequiredNpcOrGo` template spawns, since `ModelQuestTemplate` builds a kill-objective only for *attackable* creatures.
 - An `IsClassQuest` flag threaded through **every** task type (`IWAQTask`, `WAQBaseTask`, all `WAQTask*`).
 
 **New embedded data + loaders**
-- `Database/ClassQuestSteps.json` + `ClassQuestStepsData.cs` — the auto-generated use-item steps.
+- `Database/QuestSteps.json` + `QuestStepsData.cs` — the auto-generated quest steps (**renamed** from `ClassQuestSteps.*`: the table holds DB-derived steps for *all* quests — use-item, explore, use-item-on-creature — not just class quests).
 - `Database/QuestBlacklist.json` + `QuestBlacklistData.cs` — the blacklist moved **out of code into data**.
 
 **New: an offline-testable core**
@@ -85,10 +97,12 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 - **Load-filter fixes** (`Bot/JSONManagement/JSONManager.cs`): class quests are exempt from the neutral/friendly giver-ender strip and correctly class-masked; the "no giver/ender → drop" check now also counts **GameObject** givers/enders (so a GO turn-in isn't dropped).
 - `AbandonUnfitQuests` + blacklist **exemptions** for class-quest steps; a quest-objective-index bounds fix.
 - **Cross-faction leak blacklist** + a low-level **continent-gate exemption** for class quests (`WAQQuest`).
+- **Turn-in beats pickup on a shared NPC** — `WowObjectScanner.GetTaskMatchingWithObject` now orders turn-in tasks ahead of pickups when several tasks share one NPC's location (fixes the "end quest A / start quest B at the same giver" loop).
+- **In-log ⇒ not completed** (`ToolBox.IsQuestCompleted`) and **no pickup of an already-held/finished quest** (`WAQBaseTask.IsValid`) — kill premature/zombie pickup tasks in a chain.
 
 **Planner / navigation**
 - **Bulk / batch questing** — cluster nearby open quest work (~80 y) and finish it before travelling on (`TaskManager`).
-- **"Grab a quest you're walking past"** state — interact with a nearer turn-in / giver while travelling to a distant objective, instead of walking straight past it (`States/WAQStateGrabNearbyQuest.cs`).
+- **"Grab a quest you're walking past"** state (`States/WAQStateGrabNearbyQuest.cs`) — **currently disabled**: it only acted on the scanner's already-active task (duplicating Travel + Interact at a higher priority) and preempted town/train errands, so it's unregistered from the FSM. Turn-ins/pickups still happen on arrival via Travel → Interact.
 
 **UX / dev tooling**
 - **Native settings overlay** over the game (`GUI/QuesterOverlay.cs`, `GUI/OverlaySettings.cs`).
@@ -100,7 +114,7 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 
 ## Coverage
 
-FWAQ ships **285 curated quest steps** in `ClassQuestSteps.json` — all DB-generated, no hand-tuning: **~50 class quests**, **183 world use-item quests**, and **55 explore quests**.
+FWAQ ships **460 curated quest steps** in `QuestSteps.json` — all DB-generated, no hand-tuning: **~50 class quests**, **183 world use-item quests**, **55 explore quests**, and **175 use-item-on-creature quests**.
 
 ### Supported class quests
 
@@ -117,6 +131,7 @@ FWAQ ships **285 curated quest steps** in `ClassQuestSteps.json` — all DB-gene
 
 - **183 use-item quests** — e.g. the **Cleansing Totem** chain (Winterhoof / Thunderhorn / Wildmane), phials at moonwells, gems & recipes at anvils and cooking fires, *Dartol's Rod of Transformation*.
 - **55 explore ("reach an area") quests** — a category the base quester couldn't do at all (it ships no areatrigger data).
+- **175 use-item-on-creature quests** — use a quest item on a world-spawned target, e.g. **"Lazy Peons"** (awaken sleeping peons — a *friendly* target the base quester ignores entirely), *Dartol's Rod* on Ran Bloodtooth, and ~170 more. Summon-only targets (no world spawn) are deliberately excluded.
 
 > ⚠️ **Important — steps are derived from a reference DB; private servers vary. Do not AFK-bot these quests.**
 > Every coordinate and step is generated from a reference AzerothCore WotLK world DB. Private servers routinely differ in quest scripting, spawn positions, script-spawned NPCs and conditions, so an individual step may not match your server and a quest can stall. A stuck step **self-benches** (it will not break the bot), but it takes a human to notice and, if needed, finish that quest by hand. **Watch your runs** — class/use-item/explore questing here is not safe to leave unattended. You can also turn class-quest forcing off entirely with the **"Class quests"** toggle in the overlay.

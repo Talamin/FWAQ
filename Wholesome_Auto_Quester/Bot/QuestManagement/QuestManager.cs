@@ -340,12 +340,12 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
                                 AddQuestToBlackList(waqQuest.QuestTemplate.Id, "Failed");
                                 continue;
                             }
-                            // A use-item class-quest step (data in ClassQuestSteps.json) has NO DB-derivable objective,
+                            // A use-item class-quest step (data in QuestSteps.json) has NO DB-derivable objective,
                             // so GetAllObjectives() is empty for it — but it is NOT unfit: WAQTaskUseItem drives it.
                             // Without this guard such quests get abandoned + blacklisted the instant they're picked up.
                             if (logQuest.Value.State == StateFlag.None
                                 && waqQuest.GetAllObjectives().Count <= 0
-                                && ClassQuestStepsData.GetSteps(waqQuest.QuestTemplate.Id).Count <= 0)
+                                && QuestStepsData.GetSteps(waqQuest.QuestTemplate.Id).Count <= 0)
                             {
                                 AbandonQuest(waqQuest.QuestTemplate.Id, "In progress with no objectives");
                                 AddQuestToBlackList(waqQuest.QuestTemplate.Id, "In progress with no objectives");
@@ -545,11 +545,11 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
                 AddQuestToBlackList(blacklistEntry.Id, blacklistEntry.Reason, false);
             }
 
-            // Quests we can now do via a ClassQuestStep (use-item at a location) must never remain blacklisted from an
+            // Quests we can now do via a QuestStep (use-item at a location) must never remain blacklisted from an
             // earlier run that flagged them "in progress with no objectives". Clear them defensively on startup.
-            foreach (ClassQuestStep step in ClassQuestStepsData.Entries)
+            foreach (QuestStep step in QuestStepsData.Entries)
             {
-                RemoveQuestFromBlackList(step.QuestId, "Has a ClassQuestStep (use-item)", false);
+                RemoveQuestFromBlackList(step.QuestId, "Has a QuestStep (use-item)", false);
             }
 
             if (!wManagerSetting.CurrentSetting.DoNotSellList.Contains("WAQStart") || !wManagerSetting.CurrentSetting.DoNotSellList.Contains("WAQEnd"))
@@ -612,11 +612,11 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
                 }
             }
 
-            // Class-quest use-item steps: their consumable AND the item it turns into (e.g. Empty -> Filled Waterskin)
-            // have NO derivable objective, so they never land in the loot lists above. Protect BOTH names on the
-            // Do-Not-Sell list while the quest is active, or the Inventory-Manager plugin deletes the freshly-filled
-            // item as a "deprecated" low-level quest item and the objective is lost (Daniel).
-            foreach (ClassQuestStep step in ClassQuestStepsData.GetSteps(quest.QuestTemplate.Id))
+            // DB-derived use-item steps (use-item / use-item-on-npc): the consumable AND the item it turns into
+            // (e.g. Empty -> Filled Waterskin) have NO derivable objective, so they never land in the loot lists
+            // above. Protect BOTH names on the Do-Not-Sell list while the quest is active, or the Inventory-Manager
+            // plugin deletes the item as a "deprecated" low-level quest item and the objective is lost (Daniel).
+            foreach (QuestStep step in QuestStepsData.GetSteps(quest.QuestTemplate.Id))
             {
                 if (!string.IsNullOrEmpty(step.ItemName) && !result.Contains(step.ItemName))
                 {

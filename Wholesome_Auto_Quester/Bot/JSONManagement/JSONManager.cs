@@ -241,14 +241,14 @@ namespace Wholesome_Auto_Quester.Bot.JSONManagement
                     }
 
                     // Quests whose start/drop item casts a spell (use-item quests) are normally dropped — WAQ couldn't
-                    // do them. But a quest we have a curated ClassQuestStep for IS doable now (WAQTaskUseItem), so keep
+                    // do them. But a quest we have a curated QuestStep for IS doable now (WAQTaskUseItem), so keep
                     // it. This is exactly what was filtering out the Shaman totem ritual quests (Earth Sapta, etc.).
                     if ((quest.StartItemTemplate != null && quest.StartItemTemplate.HasASpellAttached
                         || quest.ItemDrop1Template != null && quest.ItemDrop1Template.HasASpellAttached
                         || quest.ItemDrop2Template != null && quest.ItemDrop2Template.HasASpellAttached
                         || quest.ItemDrop3Template != null && quest.ItemDrop3Template.HasASpellAttached
                         || quest.ItemDrop4Template != null && quest.ItemDrop4Template.HasASpellAttached)
-                        && ClassQuestStepsData.GetSteps(quest.Id).Count == 0)
+                        && QuestStepsData.GetSteps(quest.Id).Count == 0)
                     {
                         if (_logFilter) Logger.LogDebug($"[{quest.Id}] {quest.LogTitle} has been removed (Active start/prerequisite item)");
                         continue;
@@ -262,7 +262,7 @@ namespace Wholesome_Auto_Quester.Bot.JSONManagement
 
                     // TEMP diagnostic: confirm curated class-quest steps survive all filters, and that their
                     // giver/ender links were kept (giver count > 0 means the pickup task can be built).
-                    if (ClassQuestStepsData.GetSteps(quest.Id).Count > 0)
+                    if (QuestStepsData.GetSteps(quest.Id).Count > 0)
                         Logger.Log($"[ClassQuest {quest.Id}] '{quest.LogTitle}' KEPT — givers={quest.CreatureQuestGivers.Count} enders={quest.CreatureQuestEnders.Count}");
 
                     result.Add(quest);

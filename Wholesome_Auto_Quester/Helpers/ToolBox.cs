@@ -220,7 +220,16 @@ namespace Wholesome_Auto_Quester.Helpers
             return false;
         }
 
-        public static bool IsQuestCompleted(int questId) => WholesomeAQSettings.CurrentSetting.ListCompletedQuests.Contains(questId);
+        // A quest that is CURRENTLY IN THE LOG can never count as a "completed" prerequisite. ListCompletedQuests is
+        // persisted per character (WholesomeAQSettings is keyed by Name.Realm), but it survives ACROSS RUNS of that
+        // character: a quest handed in on an earlier run (or one wrongly stamped by the false-completion marking) stays
+        // in the list even after it is back in the log - re-picked-up here, or the same char name recreated for a
+        // fresh test. Without this guard "Your Place in the World" (4641) reads as already done the moment it is picked
+        // up, so the follow-up "Cutting Teeth" (803) is deemed pickable and its pickup task fights the still-pending
+        // turn-in on the SAME npc (Gornek): the bot loops "Failed to pick up Cutting Teeth" and never hands in 4641.
+        // Anchoring on "is it in the log right now" keeps the chain gate honest regardless of how it got stamped.
+        public static bool IsQuestCompleted(int questId) =>
+            !Quest.HasQuest(questId) && WholesomeAQSettings.CurrentSetting.ListCompletedQuests.Contains(questId);
 
         // Player race/class as an AzerothCore-style mask bit (1 << (id-1)), so DB conditions (RACE/CLASS) can be
         // evaluated through a helper instead of the condition model reaching into ObjectManager directly.

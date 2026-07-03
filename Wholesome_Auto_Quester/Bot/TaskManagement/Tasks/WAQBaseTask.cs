@@ -6,6 +6,7 @@ using Wholesome_Auto_Quester.Helpers;
 using Wholesome_Auto_Quester.Logic;
 using wManager;
 using wManager.Wow.Enums;
+using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 
 namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
@@ -50,6 +51,18 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
         {
             get
             {
+                // A quest-giver PICKUP for a quest we ALREADY hold or have already completed can never succeed. The
+                // status ladder normally drops the pickup task when the quest leaves ToPickup, but a task left
+                // registered on a shared giver (Gornek both STARTS and ENDS "Cutting Teeth" 788) could still be
+                // re-selected by the scanner and loop "Failed to pick up" after the quest was long since turned in.
+                // Reject it here so an already-taken/completed pickup can never be actioned again (Daniel).
+                if (IsQuestGiverPickup && QuestId > 0
+                    && (Quest.HasQuest(QuestId) || ToolBox.IsQuestCompleted(QuestId)))
+                {
+                    InvalidityReason = "Quest already taken or completed";
+                    return false;
+                }
+
                 // Gather the cheap facts; the ladder + leveling-zone progression lives in (unit-tested)
                 // TaskValidity.Evaluate. ReputationMismatch is captured once (it's also the reason string).
                 bool hasWorldMapArea = WorldMapArea != null;

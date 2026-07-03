@@ -259,9 +259,15 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
 
             if (_scannerRegistry.TryGetValue(closestObject.Entry, out List<IWAQTask> taskList))
             {
+                // When ONE npc carries several tasks (very common: turn in quest A, then that same npc gives quest B),
+                // a TURN-IN must win. Both tasks share the npc's Location, so ordering by distance alone is a tie and
+                // FirstOrDefault picked whichever registered first - often the pickup. The pickup for B usually can't
+                // even be completed until A is handed in, so the bot looped "Failed to pick up B" and never turned in A
+                // (Gornek: "Your Place in the World" / "Cutting Teeth"). Turn-ins first fixes the ordering at the source.
                 return taskList
                     .Where(task => task.IsObjectValidForTask(closestObject) && task.IsValid)
-                    .OrderBy(task => task.Location.DistanceTo(closestObject.Position))
+                    .OrderByDescending(task => task.IsTurnInQuest)
+                    .ThenBy(task => task.Location.DistanceTo(closestObject.Position))
                     .FirstOrDefault();
             }
             Logger.LogDebug($"[Scanner] No registry entry for {closestObject.Entry} ({closestObject.Name}) - skipping");

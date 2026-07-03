@@ -118,14 +118,18 @@ namespace Wholesome_Auto_Quester.Bot
                     new FlightMasterDiscoverState(),
                     new Trainers(),
                     new ToTown(),
-                    // Opportunistic turn-in/pickup: grab a quest NPC we're passing within 150y while TRAVELLING to a
-                    // quest objective. Placed BELOW Trainers / ToTown (and the Wholesome Vendors states injected near
-                    // "To Town") so a town errand — TRAINING on level-up, sell, repair — is NEVER preempted: after a
-                    // ding the bot must actually go train, not get intercepted here into accepting quests and wandering
-                    // off. Still ABOVE Travel / Interact / Kill, so it still grabs a giver we pass en route to a target.
-                    new WAQStateGrabNearbyQuest(_objectScanner),
+                    // DISABLED (Daniel): the opportunistic "grab a quest NPC we pass within 150y" state. It only ever
+                    // acted on the scanner's ALREADY-active task (it does not scan for other nearby givers), so it
+                    // merely duplicated Travel + Interact at a HIGHER FSM priority — and that priority twice caused
+                    // regressions (level-32 training preemption; amplifying the premature-pickup collision). Turn-ins
+                    // and pickups still happen via Travel -> WAQStateInteract on arrival, just without the priority
+                    // jump. Re-enable by uncommenting if a "walked past a giver" case ever proves it earns its keep.
+                    // new WAQStateGrabNearbyQuest(_objectScanner),
                     new WAQStateTravel(_taskManager, _travelManager, _continentManager),
                     _interactState,
+                    // Above Kill: while a "use item on this creature" task is still in its use phase, we use the item
+                    // first; the task then flips to KillAndLoot and Kill/Loot below finish a hostile target.
+                    new WAQStateUseItemOnCreature(_objectScanner),
                     new WAQStateKill(_objectScanner),
                     // Above MoveToHotspot on purpose: once we're standing on a use-item spot this owns the tick, so
                     // MoveToHotspot never times the task out as "couldn't find target" (that timeout is for scanned
