@@ -222,6 +222,11 @@ namespace Wholesome_Auto_Quester.Helpers
 
         public static bool IsQuestCompleted(int questId) => WholesomeAQSettings.CurrentSetting.ListCompletedQuests.Contains(questId);
 
+        // Player race/class as an AzerothCore-style mask bit (1 << (id-1)), so DB conditions (RACE/CLASS) can be
+        // evaluated through a helper instead of the condition model reaching into ObjectManager directly.
+        public static int PlayerRaceMask => 1 << ((int)ObjectManager.Me.WowRace - 1);
+        public static int PlayerClassMask => 1 << ((int)ObjectManager.Me.WowClass - 1);
+
         public static bool JSONFileIsPresent() => File.Exists(Others.GetCurrentDirectory + @"\Data\WAQquests.json");
 
         public static bool ZippedJSONIsPresent() => File.Exists(Others.GetCurrentDirectory + @"\Data\WAQquests.zip");

@@ -88,7 +88,7 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
             // ordinary quests are suppressed - otherwise the step never generates and the chain dead-ends.
             if (ObjectManager.Me.Level < 58
                 && !WholesomeAQSettings.CurrentSetting.ContinentTravel
-                && !task.IsClassQuest
+                && !(task.IsClassQuest && WholesomeAQSettings.CurrentSetting.ClassQuestsEnabled)
                 && task.WorldMapArea.Continent != _continentManager.MyMapArea.Continent)
             {
                 return;
@@ -145,6 +145,18 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
         {
             foreach (ClassQuestStep step in ClassQuestStepsData.GetSteps(QuestTemplate.Id))
             {
+                // "explore" steps: travel to the (quest_poi-derived) area to trip the areatrigger. The base quester
+                // ships no areatrigger data so these objectives never generate natively — we feed one from the step.
+                if (step.Action == "explore")
+                {
+                    if (Status == QuestStatus.InProgress)
+                    {
+                        AddTaskToDictionary(step.ObjectiveIndex, new WAQTaskExploreLocation(QuestTemplate, step.GetPosition, _continentManager, step.Map));
+                        Logger.Log($"[ClassQuest {QuestTemplate.Id}] explore task added @ {step.GetPosition}");
+                    }
+                    continue;
+                }
+
                 if (ItemsManager.GetItemCountById((uint)step.ItemId) > 0)
                 {
                     AddTaskToDictionary(step.ObjectiveIndex, new WAQTaskUseItem(QuestTemplate, step.GetPosition, step.ItemId, step.CompleteItemId, step.UseRadius, _continentManager, step.Map));

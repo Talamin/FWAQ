@@ -27,6 +27,7 @@ namespace Wholesome_Auto_Quester
         public double QuestTrackerPositionLeft { get; set; }
         public double QuestTrackerPositionTop { get; set; }
         public bool ContinentTravel { get; set; }
+        public bool ClassQuestsEnabled { get; set; }
         public List<BlackListedQuest> BlackListedQuests { get; set; }
         public bool AbandonUnfitQuests { get; set; }
         public int StopAtLevel { get; set; }
@@ -47,6 +48,7 @@ namespace Wholesome_Auto_Quester
             LastUpdateDate = 0;
             GrindOnly = false;
             ContinentTravel = true;
+            ClassQuestsEnabled = true;
             BlackListedQuests = new List<BlackListedQuest>();
             AbandonUnfitQuests = true;
             RecordUnreachables = false;

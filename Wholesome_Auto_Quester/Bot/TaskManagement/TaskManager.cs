@@ -370,7 +370,10 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
             int turnInDeferralWork = 0;
             // Class quests (AllowableClasses>0) unlock important mechanics (totems, etc.) — NEVER defer their turn-in
             // behind a cluster of ordinary quests. Once a class quest is ready to hand in, get it done (Daniel).
-            if (task.IsTurnInQuest && !task.IsClassQuest)
+            // The whole "class quest = forced priority" (Zwang) is gated behind the ClassQuestsEnabled setting so the
+            // user can turn it off; when off, class quests are treated as ordinary quests here.
+            bool classQuestForced = task.IsClassQuest && WholesomeAQSettings.CurrentSetting.ClassQuestsEnabled;
+            if (task.IsTurnInQuest && !classQuestForced)
             {
                 int workNearPlayer = CountOpenQuestWork(spaceTree, myPosition.X, myPosition.Y, myPosition.Z, TurnInBatchRadius);
                 int workNearNpc = RegionCoalesceRadius > 0f
@@ -379,7 +382,7 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                 turnInDeferralWork = TaskPriority.TurnInDeferralWork(workNearPlayer, workNearNpc);
             }
 
-            return TaskPriority.Compute(taskDistance, neighbours.Length, task.SpatialWeight, task.PriorityShift, differentContinent, hubPickupNeighbours, chainValue, turnInDeferralWork, task.IsClassQuest);
+            return TaskPriority.Compute(taskDistance, neighbours.Length, task.SpatialWeight, task.PriorityShift, differentContinent, hubPickupNeighbours, chainValue, turnInDeferralWork, classQuestForced);
         }
 
         private double Distance(float[] x, float[] y)

@@ -80,6 +80,20 @@ namespace Wholesome_Auto_Quester.Database.Conditions
                         }
                         return false;
                     }
+
+                    if (_modelConditions.ConditionTypeOrReference == 25) // CONDITION_RACE (ConditionValue1 = race mask)
+                    {
+                        _conditionText = $"{exc}Need race in mask {_modelConditions.ConditionValue1}";
+                        bool met = (ToolBox.PlayerRaceMask & _modelConditions.ConditionValue1) != 0;
+                        return positive ? met : !met;
+                    }
+
+                    if (_modelConditions.ConditionTypeOrReference == 26) // CONDITION_CLASS (ConditionValue1 = class mask)
+                    {
+                        _conditionText = $"{exc}Need class in mask {_modelConditions.ConditionValue1}";
+                        bool met = (ToolBox.PlayerClassMask & _modelConditions.ConditionValue1) != 0;
+                        return positive ? met : !met;
+                    }
                 }
                 //Logger.LogError($"{_modelConditions.SourceEntry} has an unmet condition of type {_modelConditions.SourceTypeOrReferenceId} - {_modelConditions.ConditionTypeOrReference}");
                 return true;

@@ -122,6 +122,9 @@ namespace Wholesome_Auto_Quester.GUI
                 () => s.GrindOnly, v => s.GrindOnly = v, save));
 
             // --- Behavior ---
+            list.Add(new ToggleOverlaySetting("Class quests", "Behavior",
+                "Force class quests (totems, summons, ...) to top priority, even cross-continent. OFF = treat them as ordinary quests (no forcing); they still complete if picked up.",
+                () => s.ClassQuestsEnabled, v => s.ClassQuestsEnabled = v, save));
             list.Add(new ToggleOverlaySetting("Continent travels", "Behavior",
                 "Allow intercontinental travel (recommended ON).",
                 () => s.ContinentTravel, v => s.ContinentTravel = v, save));

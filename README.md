@@ -100,9 +100,26 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 
 ## Coverage
 
-- **All four shaman totem chains** run automatically: **Earth**, **Fire**, **Water** (full — including the cross-continent zeppelin leg and the script-spawned turn-in NPC at the end); **Air** is handled natively by the base quester.
-- **47 class use-item quests** shipped in `ClassQuestSteps.json` — across **every class and both factions** (Warlock summons, shaman totems incl. the Draenei/Outland variants, warrior, death knight, rogue, druid, paladin, mage).
-- **814 use-item quests** detected DB-wide by the tool (world quests are staged for a later release, pending a "does the base quester already handle this natively?" filter).
+FWAQ ships **285 curated quest steps** in `ClassQuestSteps.json` — all DB-generated, no hand-tuning: **~50 class quests**, **183 world use-item quests**, and **55 explore quests**.
+
+### Supported class quests
+
+- **Shaman** — all four totem quest chains: **Call of Earth / Fire / Water** (full, including the cross-continent zeppelin leg and the temporary script-spawned turn-in NPC), for **both factions** incl. the Draenei/Outland variants. *Air* is handled natively.
+- **Warlock** — the demon-summoning ritual chain **"The Binding"** (all summon steps) plus the pet quests **"Imp Delivery"**, **"Shard of a Felhound" / "Shard of an Infernal"**, **"The Rune of Summoning"** and **"Kroshius' Infernal Core"**.
+- **Warrior** — *Honoring a Hero*, *Tracing the Source*, and the holiday quests (Stink Bomb, Preserved Holly, …).
+- **Death Knight** — the Barbaric/Mithril **plans-crafting** chain (*On Iron Pauldrons*, *In Search of Galvan*, …).
+- **Rogue** — *Mirror Lake*, *The Purest Water*, *Attunement to Dalaran*.
+- **Druid** — *The Pledge of Secrecy* (all three).
+- **Paladin** — *The Tome of Divinity*, *Redeeming the Dead*.
+- **Mage** — *The Affray*, *Strength of One*, *The Rethban Gauntlet*.
+
+### World quests
+
+- **183 use-item quests** — e.g. the **Cleansing Totem** chain (Winterhoof / Thunderhorn / Wildmane), phials at moonwells, gems & recipes at anvils and cooking fires, *Dartol's Rod of Transformation*.
+- **55 explore ("reach an area") quests** — a category the base quester couldn't do at all (it ships no areatrigger data).
+
+> ⚠️ **Important — steps are derived from a reference DB; private servers vary. Do not AFK-bot these quests.**
+> Every coordinate and step is generated from a reference AzerothCore WotLK world DB. Private servers routinely differ in quest scripting, spawn positions, script-spawned NPCs and conditions, so an individual step may not match your server and a quest can stall. A stuck step **self-benches** (it will not break the bot), but it takes a human to notice and, if needed, finish that quest by hand. **Watch your runs** — class/use-item/explore questing here is not safe to leave unattended. You can also turn class-quest forcing off entirely with the **"Class quests"** toggle in the overlay.
 
 ---
 

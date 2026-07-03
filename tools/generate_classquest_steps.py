@@ -3,29 +3,33 @@
 Dev-time enrichment: derive the exact "use the item HERE" coordinate for use-item quests from the
 world DB, so we no longer hand-tune coordinates.
 
-Key insight (validated in-game with Daniel): the use spot of a use-item quest IS a GameObject -- a
-SPELL_FOCUS (gameobject_template.type=8, e.g. the "Spring Well" a waterskin is filled at) or its paired
-GOOBER (type=10, e.g. the "Shaman Shrine"). quest_poi is only a rough map marker (18-43y off), so it's a
-TRAVEL anchor; the GameObject gives the precise point. Runtime then closes the last yards with a direct
+Key insight (validated in-game): the use spot of a use-item quest IS a GameObject -- a SPELL_FOCUS
+(gameobject_template.type=8, e.g. the "Spring Well" a waterskin is filled at) or its paired GOOBER
+(type=10, e.g. the "Shaman Shrine"). quest_poi is only a rough map marker (18-43y off), so it's a TRAVEL
+anchor; the GameObject gives the precise point. Runtime closes the last yards with a direct
 MovementManager.MoveTo push (WAQStateUseItem).
 
-Pipeline: for every quest whose SourceItem OR previous-quest reward is an ON-USE item
-(item_template.spellid_1>0 AND spelltrigger_1==0), find the nearest SPELL_FOCUS/GOOBER GameObject to the
-quest's quest_poi. If one is close enough, that GO's position is the use spot.
+SHIP FILTER: we only emit a step for a quest the base quester CANNOT already do natively -- i.e. one with
+NO derivable objective (no RequiredNpcOrGo kill/interact, and no RequiredItem that has a loot source).
+Class quests are always emitted (their "use item -> spawns the kill/turn-in" pattern needs the step even
+when a kill objective exists).
 
-Reads Datenbank/sql/base and writes tools/ClassQuestSteps.generated.json (+ a review table on stdout).
-Only the JSON output ships (embedded in the product). Review before replacing the shipped file.
+Outputs:
+  tools/ClassQuestSteps.generated.json  -- ALL detected use-item quests with a nearby SPELL_FOCUS/GOOBER (reference)
+  tools/ClassQuestSteps.shippable.json  -- the SAFE subset to ship (class + world-with-no-derivable-objective)
 """
 import re, io, os, math, json
 
 BASE = r'C:\Users\Daniel\Wholesome\Datenbank\sql\base'
-OUT = os.path.join(os.path.dirname(__file__), 'ClassQuestSteps.generated.json')
+OUT_ALL = os.path.join(os.path.dirname(__file__), 'ClassQuestSteps.generated.json')
+OUT_SHIP = os.path.join(os.path.dirname(__file__), 'ClassQuestSteps.shippable.json')
 
-NEAR_HIGH = 35.0   # <= this from quest_poi => high confidence
-NEAR_MAX = 55.0    # > this => don't emit (the item is used on a target / natural spot, not a GO)
+NEAR_MAX = 55.0   # > this from quest_poi => don't emit (item is used on a target, not at a GO)
+CLASS_SORTS = {-22, -61, -81, -82, -101, -141, -161, -262, -201, -121}
 
 def rd(f):
-    return io.open(os.path.join(BASE, f), encoding='utf-8', errors='replace').read()
+    p = os.path.join(BASE, f)
+    return io.open(p, encoding='utf-8', errors='replace').read() if os.path.exists(p) else ''
 
 def col_index(txt):
     return {c: i for i, c in enumerate(re.findall(r'^\s*`(\w+)`', txt, re.M))}
@@ -40,7 +44,6 @@ def split_fields(row):
     out.append(cur); return out
 
 def iter_rows(txt):
-    """Yield each top-level (...) VALUES row string, respecting quotes/nested parens."""
     i, n = 0, len(txt)
     while i < n:
         if txt[i] == '(':
@@ -51,99 +54,94 @@ def iter_rows(txt):
                 elif not inq and c == '(': depth += 1
                 elif not inq and c == ')': depth -= 1
                 prev = c; j += 1
-            yield txt[i + 1:j - 1]
-            i = j
-        else:
-            i += 1
+            yield txt[i + 1:j - 1]; i = j
+        else: i += 1
 
 def ival(s):
-    s = s.strip()
-    try: return int(s)
+    try: return int(s.strip())
     except: return 0
 
 def clean(s):
-    # strip surrounding quotes + undo SQL escaping so the name matches the in-game name exactly
     return s.strip().strip("'").replace("\\'", "'").replace('\\"', '"').replace("\\\\", "\\")
 
 # ---------- item_template: on-use items + names ----------
 itxt = rd('item_template.sql'); ic = col_index(itxt)
 I_ENTRY, I_NAME, I_SP1, I_TRG1 = ic['entry'], ic['name'], ic['spellid_1'], ic['spelltrigger_1']
-use_items = set()      # entry -> is an on-use item
-item_name = {}
+use_items = set(); item_name = {}
 for row in iter_rows(itxt):
     f = split_fields(row)
     if len(f) <= I_TRG1: continue
-    e = ival(f[I_ENTRY])
-    item_name[e] = clean(f[I_NAME])
-    if ival(f[I_SP1]) > 0 and ival(f[I_TRG1]) == 0:
-        use_items.add(e)
+    e = ival(f[I_ENTRY]); item_name[e] = clean(f[I_NAME])
+    if ival(f[I_SP1]) > 0 and ival(f[I_TRG1]) == 0: use_items.add(e)
 print(f"item_template: {len(item_name)} items, {len(use_items)} on-use")
 
-# ---------- quest_template: index the fields we need ----------
+# ---------- loot tables: item ids obtainable by loot (=> the base quester CAN derive an objective) ----------
+lootable = set()
+for lf in ('creature_loot_template.sql', 'gameobject_loot_template.sql', 'item_loot_template.sql'):
+    for row in iter_rows(rd(lf)):
+        ff = row.split(',')
+        if len(ff) >= 2: lootable.add(ival(ff[1]))
+print(f"lootable items: {len(lootable)}")
+
+# ---------- quest_template ----------
 qtxt = rd('quest_template.sql'); qc = col_index(qtxt)
-Q = {k: qc[k] for k in ('ID', 'QuestSortID', 'PrevQuestId', 'SourceItemId',
-                        'RewardItem1', 'RewardItem2', 'RewardItem3', 'RewardItem4',
-                        'RequiredItemId1', 'LogTitle')}
-quests = {}   # id -> dict
+quests = {}
 for row in iter_rows(qtxt):
     f = split_fields(row)
-    if len(f) <= Q['RequiredItemId1']: continue
-    qid = ival(f[Q['ID']])
+    if len(f) <= qc['RequiredItemId6']: continue
+    qid = ival(f[qc['ID']])
     quests[qid] = {
-        'sort': ival(f[Q['QuestSortID']]),
-        'prev': ival(f[Q['PrevQuestId']]),
-        'src': ival(f[Q['SourceItemId']]),
-        'rewards': [ival(f[Q['RewardItem%d' % k]]) for k in range(1, 5)],
-        'reqitem': ival(f[Q['RequiredItemId1']]),
-        'title': f[Q['LogTitle']].strip().strip("'"),
+        'sort': ival(f[qc['QuestSortID']]),
+        'prev': ival(f[qc['PrevQuestId']]),
+        'src': ival(f[qc['SourceItemId']]),
+        'rewards': [ival(f[qc['RewardItem%d' % k]]) for k in range(1, 5)],
+        'reqitem': ival(f[qc['RequiredItemId1']]),
+        'reqitems': [ival(f[qc['RequiredItemId%d' % k]]) for k in range(1, 7)],
+        'npcgo': [ival(f[qc['RequiredNpcOrGo%d' % k]]) for k in range(1, 5)],
+        'title': clean(f[qc['LogTitle']]),
     }
 print(f"quest_template: {len(quests)} quests")
 
 # ---------- detect use-item quests ----------
 def use_item_for(qid):
     q = quests[qid]
-    cands = [q['src']] + (quests[q['prev']]['rewards'] if q['prev'] in quests else [])
-    for c in cands:
-        if c in use_items:
-            return c
+    for c in [q['src']] + (quests[q['prev']]['rewards'] if q['prev'] in quests else []):
+        if c in use_items: return c
     return 0
-
-detected = {qid: use_item_for(qid) for qid in quests}
-detected = {qid: it for qid, it in detected.items() if it}
+detected = {qid: it for qid, it in ((q, use_item_for(q)) for q in quests) if it}
 print(f"use-item quests detected: {len(detected)}")
 
-# ---------- quest_poi anchors: qid -> list of (map, x, y) ----------
+def is_derivable(qid):
+    q = quests[qid]
+    if any(x != 0 for x in q['npcgo']): return True            # kill (>0) or interact-GO (<0)
+    if any(it in lootable for it in q['reqitems'] if it): return True  # lootable required item
+    return False
+
+# ---------- quest_poi anchors ----------
 poi_map = {}
 for row in iter_rows(rd('quest_poi.sql')):
     f = row.split(',')
-    if len(f) < 4: continue
-    try: poi_map[(int(f[0]), int(f[1]))] = int(f[3])
-    except: continue
+    if len(f) >= 4:
+        try: poi_map[(int(f[0]), int(f[1]))] = int(f[3])
+        except: pass
 anchors = {}
 for row in iter_rows(rd('quest_poi_points.sql')):
     f = row.split(',')
     if len(f) < 5: continue
-    try:
-        qid, pid, x, y = int(f[0]), int(f[1]), float(f[3]), float(f[4])
+    try: qid, pid, x, y = int(f[0]), int(f[1]), float(f[3]), float(f[4])
     except: continue
     mp = poi_map.get((qid, pid))
     if qid in detected and mp is not None:
         anchors.setdefault(qid, []).append((mp, x, y))
 
-# ---------- gameobject_template: SPELL_FOCUS(8)/GOOBER(10) ----------
+# ---------- SPELL_FOCUS/GOOBER templates + spawns ----------
 gt = rd('gameobject_template.sql'); gtc = col_index(gt)
-GT_E, GT_T, GT_N = gtc['entry'], gtc['type'], gtc['name']
-GT_D1 = gtc.get('Data1')
-focus_go = {}   # entry -> (type, name, data1)
+focus_go = {}
 for row in iter_rows(gt):
     f = split_fields(row)
-    if len(f) <= GT_T: continue
-    typ = ival(f[GT_T])
-    if typ not in (8, 10): continue
-    d1 = ival(f[GT_D1]) if (GT_D1 is not None and GT_D1 < len(f)) else 0
-    focus_go[ival(f[GT_E])] = (typ, clean(f[GT_N]), d1)
-
-# ---------- gameobject spawns of those GOs only: (map, entry, x, y, z) ----------
+    if len(f) <= gtc['type']: continue
+    if ival(f[gtc['type']]) in (8, 10):
+        focus_go[ival(f[gtc['entry']])] = (ival(f[gtc['type']]), clean(f[gtc['name']]))
 spawns_by_map = {}
 for row in iter_rows(rd('gameobject.sql')):
     f = row.split(',')
@@ -151,51 +149,51 @@ for row in iter_rows(rd('gameobject.sql')):
     try:
         e = int(f[1])
         if e not in focus_go: continue
-        mp = int(f[2]); x = float(f[5]); y = float(f[6]); z = float(f[7])
+        spawns_by_map.setdefault(int(f[2]), []).append((e, float(f[5]), float(f[6]), float(f[7])))
     except: continue
-    spawns_by_map.setdefault(mp, []).append((e, x, y, z))
-print(f"gameobject: {sum(len(v) for v in spawns_by_map.values())} SPELL_FOCUS/GOOBER spawns")
 
 TYPES = {8: 'SPELL_FOCUS', 10: 'GOOBER'}
-
 def nearest_focus(qid):
     best = None
     for (amap, ax, ay) in anchors.get(qid, []):
         for (e, x, y, z) in spawns_by_map.get(amap, []):
             d = math.hypot(x - ax, y - ay)
             if best is None or d < best[0]:
-                typ, nm, d1 = focus_go[e]
-                best = (d, e, TYPES[typ], nm, amap, x, y, z, d1)
+                typ, nm = focus_go[e]; best = (d, e, TYPES[typ], nm, amap, x, y, z)
     return best
 
-rows_out = []
+all_out, ship_out = [], []
+skipped_native = 0
 for qid, itemId in detected.items():
     go = nearest_focus(qid)
-    if not go or go[0] > NEAR_MAX:
-        continue
-    d, e, tn, nm, gmap, x, y, z, radius = go
+    if not go or go[0] > NEAR_MAX: continue
+    d, e, tn, nm, gmap, x, y, z = go
     q = quests[qid]
-    completeId = q['reqitem']
-    rows_out.append({
-        'qid': qid, 'dist': round(d, 1), 'title': q['title'], 'item': item_name.get(itemId, ''),
-        'go': nm, 'gotype': tn, 'entry': e, 'sort': q['sort'],
-        'json': {
-            "QuestId": qid, "Action": "use-item",
-            "ItemId": itemId, "ItemName": item_name.get(itemId, ''),
-            "CompleteItemId": completeId, "CompleteItemName": item_name.get(completeId, '') if completeId else "",
-            "ObjectiveIndex": 1, "Map": gmap,
-            "X": round(x, 3), "Y": round(y, 3), "Z": round(z, 3), "Tolerance": 0,
-            "Comment": f"AUTO from DB: use {item_name.get(itemId,'')} at '{nm}' ({tn} GO {e}, {d:.1f}y from quest_poi). '{q['title']}'."
-        }
-    })
+    is_class = q['sort'] in CLASS_SORTS
+    derivable = is_derivable(qid)
+    entry = {
+        "QuestId": qid, "Action": "use-item",
+        "ItemId": itemId, "ItemName": item_name.get(itemId, ''),
+        "CompleteItemId": q['reqitem'], "CompleteItemName": item_name.get(q['reqitem'], '') if q['reqitem'] else "",
+        "ObjectiveIndex": 1, "Map": gmap,
+        "X": round(x, 3), "Y": round(y, 3), "Z": round(z, 3), "Tolerance": 0,
+        "Comment": f"AUTO from DB: use {item_name.get(itemId,'')} at {nm!r} ({tn} GO {e}, {d:.1f}y from quest_poi). {q['title']!r}."
+    }
+    all_out.append(entry)
+    shippable = is_class or not derivable
+    if shippable:
+        ship_out.append(entry)
+    else:
+        skipped_native += 1
 
-rows_out.sort(key=lambda r: (r['dist']))
-print(f"\n=== {len(rows_out)} use-item quests with a SPELL_FOCUS/GOOBER within {NEAR_MAX:.0f}y ===")
-print(f"{'quest':>6} {'dist':>5} {'sort':>5}  {'item':<26} -> {'GameObject':<28} conf")
-for r in rows_out:
-    conf = 'HIGH' if r['dist'] <= NEAR_HIGH else 'review'
-    print(f"{r['qid']:>6} {r['dist']:>5} {r['sort']:>5}  {r['item'][:26]:<26} -> {r['go'][:28]:<28} {conf}")
+all_out.sort(key=lambda e: e['QuestId']); ship_out.sort(key=lambda e: e['QuestId'])
+json.dump(all_out, io.open(OUT_ALL, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
+json.dump(ship_out, io.open(OUT_SHIP, 'w', encoding='utf-8'), indent=2, ensure_ascii=False)
 
-with io.open(OUT, 'w', encoding='utf-8') as fh:
-    json.dump([r['json'] for r in rows_out], fh, indent=2, ensure_ascii=False)
-print(f"\nwrote {len(rows_out)} entries -> {OUT}")
+ship_class = [e for e in ship_out if quests[e['QuestId']]['sort'] in CLASS_SORTS]
+ship_world = [e for e in ship_out if quests[e['QuestId']]['sort'] not in CLASS_SORTS]
+print(f"\nwith a SPELL_FOCUS/GOOBER within {NEAR_MAX:.0f}y: {len(all_out)}")
+print(f"  SHIPPABLE (class OR no derivable objective): {len(ship_out)}  ->  class {len(ship_class)} + world {len(ship_world)}")
+print(f"  skipped (base quester already derives an objective): {skipped_native}")
+print(f"\nwrote {OUT_ALL}  ({len(all_out)})")
+print(f"wrote {OUT_SHIP}  ({len(ship_out)})")
