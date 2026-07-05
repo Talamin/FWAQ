@@ -69,7 +69,7 @@ namespace Wholesome_Auto_Quester.States
 
             // Some class-quest kills SPAWN their turn-in object a beat after the mob dies (e.g. the "Brazier of
             // Everfount" for Call of Water, like the Fire Pyre). Hold briefly so it appears + gets scanned before the
-            // bot re-evaluates and wanders off to another quest (Daniel: the turn-in spawned ~1s after the kill and the
+            // bot re-evaluates and wanders off to another quest (Talamin: the turn-in spawned ~1s after the kill and the
             // bot skipped it; a stop/restart then walked to it cleanly).
             if (task.IsClassQuest)
             {

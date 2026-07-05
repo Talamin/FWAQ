@@ -100,7 +100,7 @@ namespace Wholesome_Auto_Quester.States
                 // already-awoken peon gives NO new credit - that (with the per-spawn task mapping onto the same few
                 // nearby peons) is why it crawled at 1/5. We deliberately do NOT time out the TASK: the objective
                 // needs several DIFFERENT peons, and the whole task list clears itself once the quest flips to
-                // ToTurnIn. (Daniel's idea: use item -> briefly blacklist the peon -> move on.)
+                // ToTurnIn. (Talamin's idea: use item -> briefly blacklist the peon -> move on.)
                 wManagerSetting.AddBlackList(target.Guid, 30000, true);
                 Logger.Log($"[UseItemOnCreature] {target.Name} awoken - blacklisted 30s, moving to next peon");
             }

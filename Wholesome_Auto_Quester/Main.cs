@@ -62,7 +62,7 @@ public class Main : IProduct
                 return;
             }
 
-            // AutoUpdater DISABLED (Daniel, 2026-07-01): commented out entirely so the upstream GitHub release can
+            // AutoUpdater DISABLED (Talamin, 2026-07-01): commented out entirely so the upstream GitHub release can
             // NEVER overwrite the locally built DLL. (It was already skipped in DevMode; now it never runs at all.)
             // Re-enable by uncommenting if you ever want the product to self-update from the release again.
             //if (!WholesomeAQSettings.CurrentSetting.DevMode && AutoUpdater.CheckUpdate(version))

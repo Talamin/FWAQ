@@ -19,7 +19,7 @@ namespace Wholesome_Auto_Quester.States
     ///
     /// PRIORITY: placed BELOW Trainers / ToTown / the Wholesome Vendors states (see the FSM order in WAQBot), so a
     /// town errand — TRAINING on level-up, sell, repair — is NEVER preempted: after a ding the bot goes and trains
-    /// instead of getting intercepted here into accepting quests and wandering off (the regression Daniel hit at 32).
+    /// instead of getting intercepted here into accepting quests and wandering off (the regression Talamin hit at 32).
     /// It also sits BELOW combat / loot / regen, so it never interrupts a fight or looting; and the scanner's own
     /// unreachable handling clears the active object if the NPC can't be reached, so it can't preempt forever.
     /// </summary>

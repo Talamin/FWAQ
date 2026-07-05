@@ -34,7 +34,7 @@ namespace Wholesome_Auto_Quester.Database
 
         public Vector3 GetPosition => new Vector3(X, Y, Z);
         // Default 6y: many use-spots are solid objects (e.g. the "Shaman Shrine" Goober GO) — stop OUTSIDE them and use
-        // the item from there, instead of pathfinding into the object and getting stuck (Daniel). Override per step.
+        // the item from there, instead of pathfinding into the object and getting stuck (Talamin). Override per step.
         public int UseRadius => Tolerance > 0 ? Tolerance : 6;
     }
 

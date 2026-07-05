@@ -19,6 +19,9 @@ namespace Wholesome_Auto_Quester.States
         {
             get
             {
+                if (WAQStateDeathKnightStart.CombatSuppressed) // DK profile step opted out of combat (e.g. stolen-horse ride)
+                    return false;
+
                 if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                     || !ObjectManager.Me.IsValid
                     || !ObjectManager.Me.InCombatFlagOnly

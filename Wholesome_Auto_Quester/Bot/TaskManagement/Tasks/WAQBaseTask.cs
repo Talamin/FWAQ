@@ -55,7 +55,7 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
                 // status ladder normally drops the pickup task when the quest leaves ToPickup, but a task left
                 // registered on a shared giver (Gornek both STARTS and ENDS "Cutting Teeth" 788) could still be
                 // re-selected by the scanner and loop "Failed to pick up" after the quest was long since turned in.
-                // Reject it here so an already-taken/completed pickup can never be actioned again (Daniel).
+                // Reject it here so an already-taken/completed pickup can never be actioned again (Talamin).
                 if (IsQuestGiverPickup && QuestId > 0
                     && (Quest.HasQuest(QuestId) || ToolBox.IsQuestCompleted(QuestId)))
                 {

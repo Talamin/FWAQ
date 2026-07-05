@@ -26,6 +26,10 @@ namespace Wholesome_Auto_Quester.States
 
                 if (!ObjectManager.Me.IsOnTaxi && ObjectManager.Me.PlayerUsingVehicle)
                 {
+                    // A DK-profile step may deliberately own a vehicle (the stolen horse for Grand Theft Palomino, or
+                    // the Eye of Acherus) - don't yank us out of it mid-quest.
+                    if (WAQStateDeathKnightStart.VehicleWanted)
+                        return false;
                     return true;
                 }
 

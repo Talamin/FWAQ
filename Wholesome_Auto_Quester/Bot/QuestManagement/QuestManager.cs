@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using Wholesome_Auto_Quester.Bot.ContinentManagement;
 using Wholesome_Auto_Quester.Bot.JSONManagement;
+using Wholesome_Auto_Quester.Bot.ScriptedProfile;
 using Wholesome_Auto_Quester.Bot.TaskManagement;
 using Wholesome_Auto_Quester.Bot.TaskManagement.Tasks;
 using Wholesome_Auto_Quester.Database;
@@ -327,6 +328,13 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
                 {
                     foreach (KeyValuePair<int, Quest.PlayerQuest> logQuest in logQuests)
                     {
+                        // Never touch a quest owned by an active scripted profile (e.g. the Death Knight start at
+                        // Ebon Hold): that profile picks up / advances / turns it in itself, in strict order, and most
+                        // of its quests aren't in WAQ's DB list - abandoning them the instant the profile picks one up
+                        // is exactly the loop we hit (12619 accepted -> "not in our DB list" -> abandoned -> repeat).
+                        if (ScriptedProfileData.IsProfileQuest(logQuest.Key))
+                            continue;
+
                         IWAQQuest waqQuest = _questList.Find(q => q.QuestTemplate.Id == logQuest.Key);
                         if (waqQuest == null)
                         {
@@ -361,6 +369,13 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
                         }
                     }
                 }
+
+                // Items used/produced by a scripted profile (e.g. the DK start) must never be sold OR deleted - the
+                // inventory-manager plugin otherwise nukes them as "deprecated" low-level quest items (the Battle-worn
+                // Sword vanished the instant it was looted). Their quests aren't in _questList, so add the names here.
+                foreach (string profileItem in ScriptedProfileData.ProfileItemNames())
+                    if (!itemsToAddToDNSList.Contains(profileItem))
+                        itemsToAddToDNSList.Add(profileItem);
 
                 // WAQ Do Not Sell List
                 int WAQlistStartIndex = wManagerSetting.CurrentSetting.DoNotSellList.IndexOf("WAQStart");
@@ -520,6 +535,12 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
         // The WRobot facts are gathered here; the decision lives in the unit-tested QuestPrerequisites.
         private string NotPickableReason(IWAQQuest quest)
         {
+            // A quest the giver already REFUSED at this level (a core-scripted availability gate we can't see in any
+            // data) stays un-pickable until the next level-up, so the planner won't keep routing the bot across the
+            // zone to a giver that won't offer it (e.g. "The New Horde" from Eitrigg). Re-eligible after a ding.
+            if (ToolBox.IsQuestPickupRefusedAtThisLevel(quest.QuestTemplate.Id))
+                return "giver refused this quest (retry after level-up)";
+
             ModelQuestTemplateAddon addon = quest.QuestTemplate.QuestAddon;
             bool requiresSkill = addon != null && addon.RequiredSkillID > 0;
             int playerSkillValue = requiresSkill ? (int)Skill.GetValue((SkillLine)addon.RequiredSkillID) : 0;
@@ -615,7 +636,7 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
             // DB-derived use-item steps (use-item / use-item-on-npc): the consumable AND the item it turns into
             // (e.g. Empty -> Filled Waterskin) have NO derivable objective, so they never land in the loot lists
             // above. Protect BOTH names on the Do-Not-Sell list while the quest is active, or the Inventory-Manager
-            // plugin deletes the item as a "deprecated" low-level quest item and the objective is lost (Daniel).
+            // plugin deletes the item as a "deprecated" low-level quest item and the objective is lost (Talamin).
             foreach (QuestStep step in QuestStepsData.GetSteps(quest.QuestTemplate.Id))
             {
                 if (!string.IsNullOrEmpty(step.ItemName) && !result.Contains(step.ItemName))

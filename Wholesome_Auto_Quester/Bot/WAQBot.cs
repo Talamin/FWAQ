@@ -116,15 +116,24 @@ namespace Wholesome_Auto_Quester.Bot
                     new FarmingRange(),
                     new FlightMasterTakeTaxiState(),
                     new FlightMasterDiscoverState(),
-                    new Trainers(),
+                    // DISABLED (Talamin): the automatic class-trainer state. In the Death Knight start the trainers are
+                    // UP in the Ebon Hold tower (only reachable by flying the gryphon back up), so an opportunistic
+                    // "go train" would path off to an unreachable spot mid-chain. Training is instead hard-coded into
+                    // the DK profile at a defined point (when we're back up top). Re-enable if general questing needs it.
+                    // new Trainers(),
                     new ToTown(),
-                    // DISABLED (Daniel): the opportunistic "grab a quest NPC we pass within 150y" state. It only ever
+                    // DISABLED (Talamin): the opportunistic "grab a quest NPC we pass within 150y" state. It only ever
                     // acted on the scanner's ALREADY-active task (it does not scan for other nearby givers), so it
                     // merely duplicated Travel + Interact at a HIGHER FSM priority — and that priority twice caused
                     // regressions (level-32 training preemption; amplifying the premature-pickup collision). Turn-ins
                     // and pickups still happen via Travel -> WAQStateInteract on arrival, just without the priority
                     // jump. Re-enable by uncommenting if a "walked past a giver" case ever proves it earns its keep.
                     // new WAQStateGrabNearbyQuest(_objectScanner),
+                    // Scripted-zone override: inside the Death Knight start (Ebon Hold, map 609) a DK follows a
+                    // hand-authored ordered profile instead of the DB-driven quester (the chain is linear + gossip/
+                    // vehicle-scripted). Inactive for everyone else, so normal questing is untouched. Above Travel/
+                    // Interact/Kill so it owns routing in Ebon Hold; below combat/loot/regen/town which still interrupt.
+                    new WAQStateDeathKnightStart(),
                     new WAQStateTravel(_taskManager, _travelManager, _continentManager),
                     _interactState,
                     // Above Kill: while a "use item on this creature" task is still in its use phase, we use the item
@@ -323,7 +332,7 @@ namespace Wholesome_Auto_Quester.Bot
         }
 
         // Cancel an auto-mount when a hostile is squarely on the path just ahead, so the bot clears it ON FOOT instead
-        // of mounting up only to dismount into it a few yards later (the "mount -> ride 6s -> dismount -> fight" Daniel
+        // of mounting up only to dismount into it a few yards later (the "mount -> ride 6s -> dismount -> fight" Talamin
         // saw). Once the blocker is cleared the next mount attempt finds the path clear and proceeds.
         private void OnMountHandler(string mountName, CancelEventArgs cancelable)
         {

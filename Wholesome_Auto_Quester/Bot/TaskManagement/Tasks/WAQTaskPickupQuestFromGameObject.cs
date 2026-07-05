@@ -60,6 +60,9 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
             {
                 if (!QuestLUAHelper.GossipPickupQuest(_questTemplate.LogTitle, _questTemplate.Id))
                 {
+                    // Frame opened but the object-giver didn't offer the quest: a core-scripted gate we have no data
+                    // for. Record the refusal so the planner stops routing here until the next level-up (Talamin).
+                    ToolBox.MarkQuestPickupRefused(_questTemplate.Id);
                     PutTaskOnTimeout("Failed pickup gossip", 15 * 60, true);
                 }
             }

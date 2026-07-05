@@ -84,8 +84,11 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
 
                 if (!pickedUp)
                 {
-                    // Short, exponentially-escalating bench: fast re-attempts absorb a spawn delay; a genuinely
-                    // un-pickable giver still backs off quickly (30s -> 60 -> 120 ...) instead of tight-looping.
+                    // The giver's frame opened but the quest wasn't in its offer list, even after the retries above:
+                    // the server isn't offering it yet (a core-scripted gate we have NO data for - no PrevQuestID, no
+                    // conditions row). Record the refusal so the planner stops routing here until the next level-up,
+                    // instead of re-crossing the zone every time the short bench expires (Talamin: "learn from refusal").
+                    ToolBox.MarkQuestPickupRefused(_questTemplate.Id);
                     PutTaskOnTimeout("Failed pickup gossip", 30, true);
                 }
                 else

@@ -231,6 +231,26 @@ namespace Wholesome_Auto_Quester.Helpers
         public static bool IsQuestCompleted(int questId) =>
             !Quest.HasQuest(questId) && WholesomeAQSettings.CurrentSetting.ListCompletedQuests.Contains(questId);
 
+        // "Learn from refusal": some starting/hub quests (e.g. "The New Horde" 787, "Cutting Teeth" 788) are gated by
+        // the server's CORE gossip script, not by any data field (no PrevQuestID, no conditions row, the addon table
+        // is absent) - so WAQ has no way to know they aren't available yet and would keep routing the bot clear across
+        // the zone to a giver that refuses to offer them. When a pickup GENUINELY fails (the giver's frame opened but
+        // the quest wasn't in its offer list, even after retries) we record it here and stop chasing it until the next
+        // LEVEL-UP - leveling is the cheap "something changed, worth one more try" trigger. Session-only, per character.
+        private static readonly Dictionary<int, int> _pickupRefusedAtLevel = new Dictionary<int, int>();
+
+        public static void MarkQuestPickupRefused(int questId)
+        {
+            int myLevel = (int)ObjectManager.Me.Level;
+            _pickupRefusedAtLevel[questId] = myLevel;
+            Logger.Log($"[Pickup refused] Quest {questId} was not offered by its giver - not chasing it again until level {myLevel + 1}");
+        }
+
+        // True while the giver refused this quest at (or below) the current level. Cleared implicitly by dinging: once
+        // Me.Level rises above the recorded level the quest is eligible again for exactly one more attempt.
+        public static bool IsQuestPickupRefusedAtThisLevel(int questId)
+            => _pickupRefusedAtLevel.TryGetValue(questId, out int refusedLevel) && ObjectManager.Me.Level <= refusedLevel;
+
         // Player race/class as an AzerothCore-style mask bit (1 << (id-1)), so DB conditions (RACE/CLASS) can be
         // evaluated through a helper instead of the condition model reaching into ObjectManager directly.
         public static int PlayerRaceMask => 1 << ((int)ObjectManager.Me.WowRace - 1);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Wholesome_Auto_Quester.Logic
 {
     /// <summary>
-    /// Quest-chain graph logic (Phase 6). Pure + unit-testable. Designed around two facts Daniel flagged:
+    /// Quest-chain graph logic (Phase 6). Pure + unit-testable. Designed around two facts Talamin flagged:
     /// WoW quests unlock sequentially via prerequisites, and the AQ database deliberately OMITS custom-behaviour
     /// quests — so the NextQuests graph has intentional GAPS and must never block or loop. Hence: gap-safe
     /// (unknown ids are skipped, not traversed) and cycle-safe (a visited set).

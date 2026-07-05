@@ -32,7 +32,7 @@ namespace Wholesome_Auto_Quester.Logic
         public const double TurnInDeferPerWork = 0.6;   // penalty growth per nearby open task
         public const int TurnInDeferWorkCap = 4;        // cap the counted work so the penalty stays bounded (~5x)
 
-        // Class-quest "Zwang" (Daniel): class quests unlock core mechanics (Shaman totems, etc.) and are pursued to
+        // Class-quest "Zwang" (Talamin): class quests unlock core mechanics (Shaman totems, etc.) and are pursued to
         // completion regardless of distance OR continent. They score in a dedicated tier BELOW every ordinary task
         // (which are always >= 0), so they always sort first; among themselves the nearest step wins. No cluster /
         // hub / deferral / continent adjustment — the TravelManager makes the cross-continent trip once selected.
