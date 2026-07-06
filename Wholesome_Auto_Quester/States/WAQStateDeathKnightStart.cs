@@ -101,12 +101,18 @@ namespace Wholesome_Auto_Quester.States
                     return HasItem(s.ItemId) || HasItem(s.ResultItemId) || IsQuestDone(s.QuestId);
                 case "use-item":
                     return (s.ResultItemId > 0 ? HasItem(s.ResultItemId) : !HasItem(s.ItemId)) || IsQuestDone(s.QuestId);
+                case "cannon":
+                    // NOT satisfied merely on complete-in-log: after the 100 kills the DK must press the cannon's action
+                    // button 3 to be flown back UP to the giver. If we advanced on complete-in-log alone the bot would
+                    // head for the turn-in from the ship (unreachable) and die (Talamin). So the cannon step owns the
+                    // kills AND the extraction - done only once it's turned in, or complete-in-log AND we're back up top.
+                    return IsQuestDone(s.QuestId)
+                           || (IsQuestCompleteInLog(s.QuestId) && ObjectManager.Me.Position.Z > 100f);
                 case "runeforge":
                 case "interact-go":
                 case "steal-horse":
                 case "duel":
                 case "into-realm":
-                case "cannon":
                 case "persuade":
                 case "ambush":
                 case "free-and-kill":
@@ -1003,7 +1009,7 @@ namespace Wholesome_Auto_Quester.States
         private const uint CannonFireSpell = 52435;     // ability 1 - the blast that mows down the fleet
         private const uint CannonAbility2 = 52576;      // ability 2 - clears Scarlet Fleet Defenders that BOARD the cannon
         private const uint CannonFinishSpell = 52588;   // the finisher, once 100 are dead
-        private const uint CannonBoardingBuff = 46598;  // riding the mine cart to the boat
+        private const uint CannonBoardingBuff = 46598;  // aura while riding the Inconspicuous Mine Car
         private bool _cartPosKnown;
         private Vector3 _cartPos;
 
@@ -1046,34 +1052,53 @@ namespace Wholesome_Auto_Quester.States
             // moving we leave it ourselves (Talamin), then board the cannon.
             if (ObjectManager.Me.HaveBuff(CannonBoardingBuff))
             {
-                Vector3 cart = ObjectManager.Me.Position;
-                bool stopped = _cartPosKnown && cart.DistanceTo(_cartPos) < 2f;
-                _cartPos = cart;
+                // The mine car rides us from the top DOWN through the mob-infested approach to the SHIPS at Light's
+                // Point (MassacreArea1 = west ship, MassacreArea2 = east ship - the cannon platforms, matching the 28833
+                // spawns). Getting off anywhere else is fatal (the entrance mobs killed us - Talamin), and the ship is
+                // reached UP A RAMP, so nearness alone isn't enough (we'd hop off on the ramp). Only leave once we're
+                // near a cannon platform AND the car has actually come to REST (the ride/ramp is over). The stop-check
+                // can't fire early: it's gated on being right at a ship. This server doesn't auto-drop us, hence the
+                // manual leave.
+                Vector3 me = ObjectManager.Me.Position;
+                float movedSinceLast = _cartPosKnown ? me.DistanceTo(_cartPos) : 999f;
+                _cartPos = me;
                 _cartPosKnown = true;
-                if (stopped)
+
+                bool nearShip = me.Z < 30f
+                    && (me.DistanceTo2D(MassacreArea1) < 40f || me.DistanceTo2D(MassacreArea2) < 40f);
+                if (nearShip && movedSinceLast < 1.5f) // at a ship AND stopped (not still climbing the ramp)
                 {
-                    Logger.Log("[DK Profile] Mine cart arrived at the boat - leaving it");
+                    Logger.Log("[DK Profile] Mine car stopped at the ship at Light's Point - leaving it");
                     Lua.RunMacroText("/leavevehicle");
                     Usefuls.EjectVehicle();
                     _cartPosKnown = false;
                     Thread.Sleep(1500);
                     return;
                 }
-                Thread.Sleep(2000); // still riding the rails
+                Thread.Sleep(1500); // still riding / climbing the ramp to the ship - wait, don't get off early
+                return;
+            }
+
+            // Kills done -> get extracted. Press the cannon's action button 3 (spell 52588) to be picked up by the
+            // gryphon and flown back UP to Prince Valanar; casting the spell by id didn't trigger it, so we press the
+            // actual vehicle button (Talamin). Handled OUTSIDE the on-cannon block: after the press we're on the gryphon
+            // / rising, i.e. no longer "using the cannon", and must NOT re-board it. Only press while still down at the
+            // ship (Z<20). The cannon step stays current until we're back up top (IsStepSatisfied), so the exit/combat
+            // states leave the extraction gryphon alone and we never walk to the unreachable turn-in from the ship.
+            if (Quest.IsObjectiveComplete(1, step.QuestId) && ObjectManager.Me.Position.Z < 100f)
+            {
+                Conditions.ForceIgnoreIsAttacked = false;
+                if (ObjectManager.Me.Position.Z < 20f)
+                {
+                    Logger.Log("[DK Profile] Massacre kills done - pressing cannon action button 3 (gryphon extraction)");
+                    PressCannonButton3();
+                }
+                Thread.Sleep(3000);
                 return;
             }
 
             if (ObjectManager.Me.PlayerUsingVehicle)
             {
-                if (Quest.IsObjectiveComplete(1, step.QuestId))
-                {
-                    Conditions.ForceIgnoreIsAttacked = false;
-                    Logger.Log("[DK Profile] Massacre complete - firing the finisher (52588)");
-                    SpellManager.CastSpellByIdLUA(CannonFinishSpell);
-                    Thread.Sleep(10000);
-                    return;
-                }
-
                 if (ScarletDefenderBoarded())
                 {
                     Logger.Log("[DK Profile] Scarlet Fleet Defender boarded - firing ability 2 (52576)");
@@ -1096,15 +1121,18 @@ namespace Wholesome_Auto_Quester.States
                 return; // on the cannon but between the two staging areas - hold
             }
 
-            // not on the cannon -> board it (a live cannon NPC, or the cannon gameobject that spawns/mounts one)
+            // Not in a vehicle. If a Scarlet Cannon is right here (we've ridden down to Light's Point) board it;
+            // otherwise take the Inconspicuous Mine Car (190767) that rides us down. The proximity gate matters: a
+            // cannon at Light's Point can be loaded in the object manager while we're still up top ~300y away, and
+            // without the gate the bot walks off toward the unreachable cannon instead of boarding the mine car (Talamin).
             WoWUnit cannon = ObjectManager.GetNearestWoWUnit(ObjectManager.GetWoWUnitByEntry(CannonNpc));
-            if (cannon != null && cannon.IsValid)
+            if (cannon != null && cannon.IsValid && cannon.Position.DistanceTo(ObjectManager.Me.Position) < 40f)
             {
-                Logger.Log("[DK Profile] Boarding the cannon (28833)");
+                Logger.Log("[DK Profile] Boarding the Scarlet Cannon (28833)");
                 GoToTask.ToPositionAndIntecractWithNpc(cannon.Position, cannon.Entry);
                 return;
             }
-            Logger.Log("[DK Profile] Activating the cannon gameobject (190767)");
+            Logger.Log("[DK Profile] Riding the Inconspicuous Mine Car to Light's Point (190767)");
             GoToTask.ToPositionAndIntecractWithGameObject(CannonGoSpot, CannonGo);
         }
 
@@ -1118,6 +1146,15 @@ namespace Wholesome_Auto_Quester.States
                 SpellManager.CastSpellByIdLUA(CannonFireSpell);
                 Thread.Sleep(1000);
             }
+        }
+
+        // Press the cannon's action button 3 - the extraction (spell 52588) that calls the gryphon to fly us back up to
+        // the giver. Click the actual vehicle action button (casting 52588 by id didn't trigger it - Talamin), and also
+        // cast it as a fallback for clients whose vehicle bar frame differs. Doubling up is harmless.
+        private void PressCannonButton3()
+        {
+            Lua.LuaDoString("local b = VehicleMenuBarActionButton3 or OverrideActionBarButton3; if b then b:Click() end");
+            SpellManager.CastSpellByIdLUA(CannonFinishSpell);
         }
 
         // --- hard-coded training: whenever we're UP TOP in Acherus at a defined point (the DK trains SEVERAL times as it
