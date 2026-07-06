@@ -11,7 +11,7 @@ namespace Wholesome_Auto_Quester.Bot.ScriptedProfile
     /// </summary>
     public class ScriptedProfileStep
     {
-        public string Action { get; set; }    // pickup | turnin | get-item-from-go | use-item | runeforge | interact-go | turnin-go | eye-of-acherus | ride-transporter | take-taxi | patrol | steal-horse | duel | into-realm | raise-ghouls | cannon | set-ground-mount | train | persuade | special-surprise | ambush | portal | frost-wyrm | escort-battle | death-gate | acherus-battle | faction-finale | todo
+        public string Action { get; set; }    // pickup | turnin | get-item-from-go | use-item | runeforge | interact-go | turnin-go | eye-of-acherus | ride-transporter | take-taxi | patrol | steal-horse | duel | into-realm | raise-ghouls | cannon | set-ground-mount | train | persuade | special-surprise | ambush | free-and-kill | portal | frost-wyrm | escort-battle | death-gate | acherus-battle | faction-finale | todo
         public int QuestId { get; set; }
         public string QuestName { get; set; }  // exact in-game LogTitle, for gossip-button matching
         public int Npc { get; set; }           // giver (pickup) / turn-in (turnin) creature entry

@@ -383,6 +383,7 @@
     <Compile Include="States\WAQStateUseItem.cs" />
     <Compile Include="States\WAQStateUseItemOnCreature.cs" />
     <Compile Include="States\WAQStateDeathKnightStart.cs" />
+    <Compile Include="States\WAQStateMoongladeTeleport.cs" />
     <Compile Include="States\WAQStatePriorityLoot.cs" />
     <Compile Include="States\WAQStateGrabNearbyQuest.cs" />
     <Compile Include="States\WAQStateInteract.cs" />

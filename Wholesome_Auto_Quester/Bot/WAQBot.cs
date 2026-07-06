@@ -114,6 +114,10 @@ namespace Wholesome_Auto_Quester.Bot
                     //new MillingState(),
                     new Farming(),
                     new FarmingRange(),
+                    // Druid shortcut INTO Moonglade: cast Teleport: Moonglade instead of walking/taxiing in (the land
+                    // entrance is a high-level mob gauntlet). Above the flight-master states so the teleport wins for a
+                    // Moonglade destination; inactive for everyone else. LEAVING Moonglade is left to the flight master.
+                    new WAQStateMoongladeTeleport(_taskManager, _continentManager),
                     new FlightMasterTakeTaxiState(),
                     new FlightMasterDiscoverState(),
                     // DISABLED (Talamin): the automatic class-trainer state. In the Death Knight start the trainers are

@@ -45,7 +45,7 @@
     "X": 2491.9,
     "Y": -5636.3,
     "Z": 420.6,
-    "Comment": "Loot GO 190584 'Battle-worn Sword' -> item 38607. 18 spawns on map 609; go to spot + interact nearest (from tested reference profile)."
+    "Comment": "Loot GO 190584 'Battle-worn Sword' -> item 38607. 18 spawns on map 609. Handler walks to the NEAREST matching object (not the fixed coord) and closes in progressively, so a spawn a few yards off the reference spot no longer spams 'too far away'. If a server ships the sword under a different GO id, add it to GoEntries (else the handler falls back to the nearest object within 10y of this spot)."
   },
   {
     "Action": "use-item",
@@ -120,16 +120,18 @@
     "Comment": "Giver Instructor Razuvious (28357)."
   },
   {
-    "Action": "interact-go",
+    "Action": "free-and-kill",
     "QuestId": 12848,
     "QuestName": "The Endless Hunger",
     "GoEntry": 191582,
-    "WaitMs": 2500,
+    "Npc": 29519,
+    "TargetEntries": [29519, 29520, 29565, 29566, 29567],
+    "WaitMs": 3000,
     "Map": 609,
     "X": 2481.146,
     "Y": -5585.025,
     "Z": 415.6641,
-    "Comment": "Repeatedly interact GO 191582 'Acherus Soul Prison' (1 spawn near coord) -> drains Unworthy Initiates with the equipped runeblade until complete-in-log. From tested reference (Part 1, q12848)."
+    "Comment": "DB quest text: 'free an Unworthy Initiate and then KILL' it. Interact GO 191582 'Acherus Soul Prison' frees ONE initiate (29519 + model variants 29520/29565/29566/29567, all credit 29519); it equips its gear and flips friendly->hostile, then the fightclass kills it (RunFreeAndKill waits for the flip, like the duel). Free the next only once the current is dead; loop until complete-in-log. Old 'interact-go' just re-freed initiates and the DK got beaten to death while the fightclass had no hostile target (Talamin)."
   },
   {
     "Action": "turnin",

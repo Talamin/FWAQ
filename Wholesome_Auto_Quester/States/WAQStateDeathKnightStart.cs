@@ -109,6 +109,7 @@ namespace Wholesome_Auto_Quester.States
                 case "cannon":
                 case "persuade":
                 case "ambush":
+                case "free-and-kill":
                 case "escort-battle":
                     return IsQuestCompleteInLog(s.QuestId) || IsQuestDone(s.QuestId);
                 case "raise-ghouls":
@@ -401,6 +402,9 @@ namespace Wholesome_Auto_Quester.States
                 case "interact-go":
                     RunInteractGo(step);
                     break;
+                case "free-and-kill":
+                    RunFreeAndKill(step);
+                    break;
                 case "turnin-go":
                     RunTurninGo(step);
                     break;
@@ -508,26 +512,66 @@ namespace Wholesome_Auto_Quester.States
             if (HasItem(step.ItemId))
                 return;
 
-            // Walk to the spot and only interact once STOPPED. The reference splits travel from the interact for a
-            // reason: some of these GOs hand the item over via a channeled "Stealing" cast (e.g. 12724's New Avalon
-            // Patrol Schedule GO 191084, gameobject_template type 3 castBarCaption 'Stealing') and the channel breaks
-            // the instant we move, so the combined GoToTask...GameObject (which keeps micro-adjusting toward the GO)
-            // never lets it finish. Stand still, interact once, then wait the channel out (no-op for instant loot).
-            GoToTask.ToPosition(step.GetPosition);
-            if (MovementManager.InMovement)
-                return;
-
-            WoWGameObject go = ObjectManager.GetWoWGameObjectByEntry(step.GoEntry).FirstOrDefault();
+            // Find the object to loot. Prefer the exact entry (+ any GoEntries alternates), but fall back to the
+            // NEAREST gameobject at the spot - some servers ship the same object under a slightly different entry
+            // (Talamin: the Battle-worn Sword id varies between servers), and at these scripted spots the quest object
+            // is the only interactable one there. So we don't hard-fail when GoEntry itself isn't present.
+            WoWGameObject go = FindStepGameObject(step);
             if (go == null)
             {
-                Thread.Sleep(500);
+                GoToTask.ToPosition(step.GetPosition); // bring the spot into view, then re-scan next pulse
                 return;
             }
-            Logger.Log($"[DK Profile] Getting item {step.ItemId} from GO {step.GoEntry} for '{step.QuestName}'");
+
+            // Close in on the ACTUAL object, not the fixed coord: the sword can spawn a few yards off the reference
+            // spot, so interacting from the coord parks us just out of range and spams "too far away". Tight GoToTask
+            // first; if the navmesh stops short of it, push the last yards straight in with MoveTo (like the use-item
+            // state). Only interact once we're actually in range AND stopped.
+            if (go.Position.DistanceTo(ObjectManager.Me.Position) > 4f)
+            {
+                GoToTask.ToPosition(go.Position, 1f);
+                if (go.Position.DistanceTo(ObjectManager.Me.Position) > 4f)
+                {
+                    MovementManager.MoveTo(go.Position);
+                    Thread.Sleep(600);
+                }
+                return;
+            }
+
+            // On top of it: stand still and interact once. Some of these GOs hand the item over via a channeled
+            // "Stealing" cast (e.g. 12724's New Avalon Patrol Schedule GO 191084, gameobject_template type 3
+            // castBarCaption 'Stealing') that breaks the instant we move - so interact STATIONARY, then wait the
+            // channel out (a no-op for instant loot). We never micro-adjust during the channel.
             MovementManager.StopMove();
+            Logger.Log($"[DK Profile] Getting item {step.ItemId} from GO {go.Entry} for '{step.QuestName}'");
             Interact.InteractGameObject(go.GetBaseAddress);
             Thread.Sleep(Usefuls.Latency + 400);
             Usefuls.WaitIsCasting();
+        }
+
+        // Resolve the gameobject a "get-item-from-go" step should loot: the primary GoEntry (or any GoEntries
+        // alternate) if present, else the nearest gameobject to the step spot within ~10y - a robustness net for
+        // servers that ship the object under a different entry id (Talamin). Nearest-to-ME so we walk to the closest
+        // spawn when several exist (e.g. the 18 Battle-worn Sword spawns).
+        private static WoWGameObject FindStepGameObject(ScriptedProfileStep step)
+        {
+            System.Collections.Generic.HashSet<int> entries = new System.Collections.Generic.HashSet<int> { step.GoEntry };
+            if (step.GoEntries != null)
+                foreach (int e in step.GoEntries)
+                    entries.Add(e);
+
+            WoWGameObject byEntry = ObjectManager.GetObjectWoWGameObject()
+                .Where(g => entries.Contains((int)g.Entry))
+                .OrderBy(g => g.Position.DistanceTo(ObjectManager.Me.Position))
+                .FirstOrDefault();
+            if (byEntry != null)
+                return byEntry;
+
+            // Entry not found on this server -> nearest object physically at the spot.
+            return ObjectManager.GetObjectWoWGameObject()
+                .Where(g => g.Position.DistanceTo(step.GetPosition) <= 10f)
+                .OrderBy(g => g.Position.DistanceTo(ObjectManager.Me.Position))
+                .FirstOrDefault();
         }
 
         // --- use a quest item at a spot (it casts / transforms into ResultItemId) -------------------------------
@@ -580,6 +624,76 @@ namespace Wholesome_Auto_Quester.States
             Logger.Log($"[DK Profile] Interacting GO {step.GoEntry} for '{step.QuestName}'");
             Interact.InteractGameObject(go.GetBaseAddress);
             Thread.Sleep(step.WaitMs > 0 ? step.WaitMs : 2000);
+        }
+
+        // --- "The Endless Hunger" (12848): FREE an Unworthy Initiate from the Acherus Soul Prison (GO 191582), then KILL
+        // it. The prison interact only RELEASES the initiate - the DB quest text is explicit: "free an Unworthy Initiate
+        // and then kill" it; it equips its gear and turns from FRIENDLY to HOSTILE before it battles you. So the old
+        // "just re-interact the prison" approach was wrong twice over: it never killed anything, and re-interacting every
+        // couple of seconds freed MORE initiates. Worse, engaging while the initiate is still friendly leaves WRobot with
+        // no holdable target, so the fightclass sits idle and the DK gets beaten to death (Talamin's log). Fix mirrors
+        // RunDuel: free ONE, WAIT for it to flip hostile, then hand it to the fightclass via Fight.StartFight, and only
+        // free the next once the current one is dead.
+        private void RunFreeAndKill(ScriptedProfileStep step)
+        {
+            // A freed initiate still up near the prison?
+            WoWUnit initiate = ObjectManager.GetObjectWoWUnit()
+                .Where(u => u.IsValid && u.IsAlive && IsStepInitiate(step, u)
+                            && u.Position.DistanceTo(step.GetPosition) <= 40f)
+                .OrderBy(u => u.Position.DistanceTo(ObjectManager.Me.Position))
+                .FirstOrDefault();
+
+            if (initiate != null)
+            {
+                // It's freed. Only engage once it has flipped to hostile (it "equips its gear" first); while it's still
+                // friendly Fight.StartFight finds no enemy and the fightclass idles (RunDuel hits the same flip), so just
+                // face it and wait. Once hostile, hand it to the fightclass, which kills it (blocking).
+                if (initiate.IsAttackable && initiate.Reaction <= Reaction.Neutral)
+                {
+                    Logger.Log($"[DK Profile] Killing the freed Unworthy Initiate for '{step.QuestName}'");
+                    MovementManager.Face(initiate);
+                    Fight.StartFight(initiate.Guid);
+                }
+                else
+                {
+                    MovementManager.Face(initiate);
+                    Thread.Sleep(800); // still friendly / equipping - wait for the flip to hostile
+                }
+                return;
+            }
+
+            // None freed -> interact the Soul Prison to release one. Approach the ACTUAL GO progressively (same as
+            // RunGetItemFromGo) so we don't park just out of range spamming "too far away".
+            WoWGameObject prison = FindStepGameObject(step);
+            if (prison == null)
+            {
+                GoToTask.ToPosition(step.GetPosition);
+                return;
+            }
+            if (prison.Position.DistanceTo(ObjectManager.Me.Position) > 4f)
+            {
+                GoToTask.ToPosition(prison.Position, 1f);
+                if (prison.Position.DistanceTo(ObjectManager.Me.Position) > 4f)
+                {
+                    MovementManager.MoveTo(prison.Position);
+                    Thread.Sleep(600);
+                }
+                return;
+            }
+            MovementManager.StopMove();
+            Logger.Log($"[DK Profile] Freeing an Unworthy Initiate from GO {prison.Entry} for '{step.QuestName}'");
+            Interact.InteractGameObject(prison.GetBaseAddress);
+            Thread.Sleep(step.WaitMs > 0 ? step.WaitMs : 3000); // let it spawn + start equipping
+        }
+
+        // True if the unit is one of the step's target creatures (TargetEntries if set, else Npc). The Unworthy Initiate
+        // ships as several model-variant entries (29519 + 29520/29565/29566/29567) that all credit the base, so match
+        // the whole set rather than a single id.
+        private static bool IsStepInitiate(ScriptedProfileStep step, WoWUnit u)
+        {
+            if (step.TargetEntries != null && step.TargetEntries.Count > 0)
+                return step.TargetEntries.Contains((int)u.Entry);
+            return u.Entry == step.Npc;
         }
 
         // --- turn a quest in AT a gameobject questender (e.g. 12717's Plague Cauldron 190936). Interacting the GO opens
