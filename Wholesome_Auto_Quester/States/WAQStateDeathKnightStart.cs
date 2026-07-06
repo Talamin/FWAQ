@@ -763,11 +763,21 @@ namespace Wholesome_Auto_Quester.States
                 if (ObjectManager.Target != null && ObjectManager.Target.Position.DistanceTo2D(target) < 15)
                 {
                     Logger.Log($"[DK Profile] Siphoning objective {idx + 1}/4 of '{step.QuestName}'");
+                    MovementManager.StopMove();
                     SpellManager.CastSpellByIdLUA(EyeSiphonSpell);
-                    Usefuls.WaitIsCasting();
-                    while (ObjectManager.Me.IsCast)
-                        MovementManager.StopMove();
-                    Thread.Sleep(step.WaitMs > 0 ? step.WaitMs : 3000);
+
+                    // The siphon is a channelled VEHICLE cast. Re-issuing it each pulse (as before) restarts/interrupts
+                    // it, so the objective never credits (Talamin: "unterbricht ständig den Cast"). Usefuls.
+                    // WaitIsCasting doesn't see the vehicle's cast (it reads the parked body), and any drift breaks the
+                    // channel - so cast ONCE, then hold the eye still and wait for THIS objective to credit (or ~9s)
+                    // WITHOUT re-casting. Next pulse advances to the following objective once this one is complete.
+                    for (int w = 0; w < 30
+                            && !Quest.IsObjectiveComplete(idx + 1, step.QuestId)
+                            && Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause; w++)
+                    {
+                        MovementManager.StopMove(); // keep the eye from drifting out of the cast
+                        Thread.Sleep(300);
+                    }
                 }
                 return;
             }
