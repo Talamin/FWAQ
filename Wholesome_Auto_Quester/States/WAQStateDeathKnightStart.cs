@@ -1861,6 +1861,14 @@ namespace Wholesome_Auto_Quester.States
         // mob (TargetEntries) and loot the nearest objective gameobject (GoEntries). The combat fightclass (above us in
         // the FSM) does the actual killing + looting. Serves several quests at once (QuestIds), done when ALL of them
         // read complete-in-log. All data comes from the step, so any DK kill/gather area is just another patrol step.
+        // A gather GO just looted -> its GUID + the tick we looted it. These "Stealing" gather objects (Empty Cauldron
+        // 190937 / Iron Chain 190938) are persistent world scenery that does NOT despawn, so without this the patrol
+        // scan keeps picking the SAME nearest one and re-loots it forever instead of moving to the next objective GO
+        // (Talamin). Time-limited so a loot that didn't actually register is retried after it expires.
+        private static readonly System.Collections.Generic.Dictionary<ulong, int> _patrolLootedGos =
+            new System.Collections.Generic.Dictionary<ulong, int>();
+        private const int PatrolLootSkipMs = 90000;
+
         private void RunPatrol(ScriptedProfileStep step)
         {
             Vector3 myPos = ObjectManager.Me.Position;
@@ -1888,6 +1896,8 @@ namespace Wholesome_Auto_Quester.States
                 WoWGameObject go = ObjectManager.GetObjectWoW()
                     .OfType<WoWGameObject>()
                     .Where(o => o.IsValid && step.GoEntries.Contains((int)o.Entry)
+                                && !(_patrolLootedGos.TryGetValue(o.Guid, out int lootedAt)
+                                     && unchecked(System.Environment.TickCount - lootedAt) < PatrolLootSkipMs)
                                 && o.Position.DistanceTo(myPos) < GrindSearchRange)
                     .OrderBy(o => o.Position.DistanceTo(myPos))
                     .FirstOrDefault();
@@ -1902,6 +1912,10 @@ namespace Wholesome_Auto_Quester.States
                     // never loots, even with no mobs). Stand still and wait the channel out so the loot registers.
                     Thread.Sleep(Usefuls.Latency + 400);
                     Usefuls.WaitIsCasting();
+                    // Only mark it looted once we've actually REACHED it (interacted) - not while still walking up, else
+                    // we'd skip a GO we never looted. These GOs don't despawn, so this stops us re-picking the same one.
+                    if (go.Position.DistanceTo(ObjectManager.Me.Position) < 6f)
+                        _patrolLootedGos[go.Guid] = System.Environment.TickCount;
                     return;
                 }
             }
