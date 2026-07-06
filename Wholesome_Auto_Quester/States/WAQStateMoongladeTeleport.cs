@@ -32,8 +32,14 @@ namespace Wholesome_Auto_Quester.States
         private readonly ITaskManager _taskManager;
         private readonly IContinentManager _continentManager;
 
-        private const int MoongladeAreaId = 493;              // Moonglade zone (world-map-area areaID / AreaTable id)
         private const uint TeleportMoongladeSpellId = 18960;  // Druid "Teleport: Moonglade"
+
+        // Moonglade's world-map rectangle (map 1). We test the raw position against it rather than asking the continent
+        // manager for the area id: Moonglade's rectangle overlaps its neighbours, so GetWorldMapAreaFromPoint can
+        // resolve the wrong area and areaID==493 comes back false while we're actually there (Talamin).
+        private const float MgXMin = 6952f, MgXMax = 8491f, MgYMin = -3689f, MgYMax = -1381f;
+        private static bool IsMoongladePoint(int mapId, Vector3 p) =>
+            mapId == 1 && p.X >= MgXMin && p.X <= MgXMax && p.Y >= MgYMin && p.Y <= MgYMax;
 
         // Don't hammer the cast if something blocks it (indoors, on cooldown, ...); a full attempt blocks ~cast + the
         // loading screen anyway, so this is just a floor between failed attempts.
@@ -65,8 +71,8 @@ namespace Wholesome_Auto_Quester.States
                     return false;
 
                 // Fire only when the current objective is IN Moonglade and we are not already there.
-                if (task.WorldMapArea.areaID != MoongladeAreaId
-                    || _continentManager.MyMapArea?.areaID == MoongladeAreaId)
+                if (!IsMoongladePoint(task.WorldMapArea.mapID, task.Location)
+                    || IsMoongladePoint(Usefuls.ContinentId, ObjectManager.Me.Position))
                     return false;
 
                 DisplayName = "Moonglade: Teleport in";
@@ -96,7 +102,7 @@ namespace Wholesome_Auto_Quester.States
                 Timer arrival = new Timer(20000);
                 while (!arrival.IsReady
                        && Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
-                       && _continentManager.MyMapArea?.areaID != MoongladeAreaId)
+                       && !IsMoongladePoint(Usefuls.ContinentId, ObjectManager.Me.Position))
                     Thread.Sleep(500);
 
                 Thread.Sleep(1500); // let WRobot re-baseline its position after the loading screen before restoring
@@ -106,7 +112,7 @@ namespace Wholesome_Auto_Quester.States
                 wManagerSetting.CurrentSetting.CloseIfPlayerTeleported = savedGuard;
             }
 
-            if (_continentManager.MyMapArea?.areaID == MoongladeAreaId)
+            if (IsMoongladePoint(Usefuls.ContinentId, ObjectManager.Me.Position))
                 Logger.Log("[Moonglade] Arrived in Nighthaven");
         }
     }

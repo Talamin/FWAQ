@@ -636,34 +636,28 @@ namespace Wholesome_Auto_Quester.States
         // free the next once the current one is dead.
         private void RunFreeAndKill(ScriptedProfileStep step)
         {
-            // A freed initiate still up near the prison?
-            WoWUnit initiate = ObjectManager.GetObjectWoWUnit()
+            // 1. A freed, HOSTILE Unworthy Initiate up? Kill it - the fightclass does the damage once it's a real enemy.
+            // ONLY hostile ones count: the initiates standing chained at the prison are FRIENDLY until we release them,
+            // so keying on "any initiate present" made the bot sit and wait forever instead of walking to the prison and
+            // freeing one (Talamin's log: "er geht nicht zu den Initianten").
+            WoWUnit hostile = ObjectManager.GetObjectWoWUnit()
                 .Where(u => u.IsValid && u.IsAlive && IsStepInitiate(step, u)
-                            && u.Position.DistanceTo(step.GetPosition) <= 40f)
+                            && u.IsAttackable && u.Reaction <= Reaction.Neutral
+                            && u.Position.DistanceTo(step.GetPosition) <= 60f)
                 .OrderBy(u => u.Position.DistanceTo(ObjectManager.Me.Position))
                 .FirstOrDefault();
 
-            if (initiate != null)
+            if (hostile != null)
             {
-                // It's freed. Only engage once it has flipped to hostile (it "equips its gear" first); while it's still
-                // friendly Fight.StartFight finds no enemy and the fightclass idles (RunDuel hits the same flip), so just
-                // face it and wait. Once hostile, hand it to the fightclass, which kills it (blocking).
-                if (initiate.IsAttackable && initiate.Reaction <= Reaction.Neutral)
-                {
-                    Logger.Log($"[DK Profile] Killing the freed Unworthy Initiate for '{step.QuestName}'");
-                    MovementManager.Face(initiate);
-                    Fight.StartFight(initiate.Guid);
-                }
-                else
-                {
-                    MovementManager.Face(initiate);
-                    Thread.Sleep(800); // still friendly / equipping - wait for the flip to hostile
-                }
+                Logger.Log($"[DK Profile] Killing the freed Unworthy Initiate for '{step.QuestName}'");
+                MovementManager.Face(hostile);
+                Fight.StartFight(hostile.Guid);
                 return;
             }
 
-            // None freed -> interact the Soul Prison to release one. Approach the ACTUAL GO progressively (same as
-            // RunGetItemFromGo) so we don't park just out of range spamming "too far away".
+            // 2. No hostile initiate -> WALK to the Acherus Soul Prison and interact it to FREE one (it then equips its
+            // gear, turns hostile and is killed by branch 1). Approach the ACTUAL GO progressively (like RunGetItemFromGo)
+            // so we don't park just out of range spamming "too far away".
             WoWGameObject prison = FindStepGameObject(step);
             if (prison == null)
             {
@@ -681,9 +675,9 @@ namespace Wholesome_Auto_Quester.States
                 return;
             }
             MovementManager.StopMove();
-            Logger.Log($"[DK Profile] Freeing an Unworthy Initiate from GO {prison.Entry} for '{step.QuestName}'");
+            Logger.Log($"[DK Profile] Freeing an Unworthy Initiate from the Acherus Soul Prison (GO {prison.Entry}) for '{step.QuestName}'");
             Interact.InteractGameObject(prison.GetBaseAddress);
-            Thread.Sleep(step.WaitMs > 0 ? step.WaitMs : 3000); // let it spawn + start equipping
+            Thread.Sleep(step.WaitMs > 0 ? step.WaitMs : 3000); // let it spawn + flip hostile before branch 1 engages
         }
 
         // True if the unit is one of the step's target creatures (TargetEntries if set, else Npc). The Unworthy Initiate

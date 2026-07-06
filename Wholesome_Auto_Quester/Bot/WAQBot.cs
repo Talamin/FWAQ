@@ -118,8 +118,17 @@ namespace Wholesome_Auto_Quester.Bot
                     // entrance is a high-level mob gauntlet). Above the flight-master states so the teleport wins for a
                     // Moonglade destination; inactive for everyone else. LEAVING Moonglade is left to the flight master.
                     new WAQStateMoongladeTeleport(_taskManager, _continentManager),
-                    new FlightMasterTakeTaxiState(),
-                    new FlightMasterDiscoverState(),
+                    // Reliable Moonglade EXIT via the Cenarion free-flight gossip (Bunthen/Silva) - above the flight
+                    // master states, so we never taxi-map or walk out of Moonglade (the taxi map needs the learned
+                    // outbound path a teleported-in char lacks; walking out hits the deadly entrance gauntlet).
+                    new WAQStateMoongladeExit(_taskManager, _continentManager),
+                    // Integrated flight-master travel: ported from the Wholesome-TBC-FlightMaster plugin INTO the product
+                    // for full control (no longer the Dungeon Crawler's compiled FlightMaster* states - a separate
+                    // product). Register the manager's own instances, since its stuck/discovery hooks compare against
+                    // these exact objects.
+                    FlightMasterManagement.FlightMasterManager.takeTaxiState,
+                    FlightMasterManagement.FlightMasterManager.discoverFlightMasterState,
+                    FlightMasterManagement.FlightMasterManager.waitOnTaxiState,
                     // DISABLED (Talamin): the automatic class-trainer state. In the Death Knight start the trainers are
                     // UP in the Ebon Hold tower (only reachable by flying the gryphon back up), so an opportunistic
                     // "go train" would path off to an unreachable spot mid-chain. Training is instead hard-coded into
@@ -172,6 +181,10 @@ namespace Wholesome_Auto_Quester.Bot
 
                 Fsm.StartEngine(10, "_AutoQuester");
 
+                // Start the integrated flight-master travel system (movement-pulse taxi trigger + background node
+                // discovery). Its FSM states are already registered above.
+                FlightMasterManagement.FlightMasterManager.Initialize();
+
                 StopBotIf.LaunchNewThread();
 
                 MovementEvents.OnSeemStuck += SeemStuckHandler;
@@ -206,6 +219,7 @@ namespace Wholesome_Auto_Quester.Bot
                 _questManager?.Dispose();
                 _taskManager?.Dispose();
                 _travelManager?.Dispose();
+                FlightMasterManagement.FlightMasterManager.Dispose();
 
                 _interactState.Dispose();
 

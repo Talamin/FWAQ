@@ -318,6 +318,17 @@
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskUseItemOnCreature.cs" />
     <Compile Include="Bot\ScriptedProfile\ScriptedProfileStep.cs" />
     <Compile Include="Bot\ScriptedProfile\ScriptedProfileData.cs" />
+    <Compile Include="Bot\FlightMasterManagement\WFMLogger.cs" />
+    <Compile Include="Bot\FlightMasterManagement\FlightMaster.cs" />
+    <Compile Include="Bot\FlightMasterManagement\WFMSettings.cs" />
+    <Compile Include="Bot\FlightMasterManagement\WFMToolBox.cs" />
+    <Compile Include="Bot\FlightMasterManagement\FlightMasterDB.cs" />
+    <Compile Include="Bot\FlightMasterManagement\WFMSetup.cs" />
+    <Compile Include="Bot\FlightMasterManagement\WFMMoveInteract.cs" />
+    <Compile Include="Bot\FlightMasterManagement\FlightMasterManager.cs" />
+    <Compile Include="Bot\FlightMasterManagement\DiscoverFlightMasterState.cs" />
+    <Compile Include="Bot\FlightMasterManagement\TakeTaxiState.cs" />
+    <Compile Include="Bot\FlightMasterManagement\WaitOnTaxiState.cs" />
     <Compile Include="Bot\QuestManagement\WAQQuest.cs" />
     <Compile Include="Bot\TaskManagement\WowObjectScanner.cs" />
     <Compile Include="Bot\TravelManagement\ContinentHelper.cs" />
@@ -384,6 +395,7 @@
     <Compile Include="States\WAQStateUseItemOnCreature.cs" />
     <Compile Include="States\WAQStateDeathKnightStart.cs" />
     <Compile Include="States\WAQStateMoongladeTeleport.cs" />
+    <Compile Include="States\WAQStateMoongladeExit.cs" />
     <Compile Include="States\WAQStatePriorityLoot.cs" />
     <Compile Include="States\WAQStateGrabNearbyQuest.cs" />
     <Compile Include="States\WAQStateInteract.cs" />
