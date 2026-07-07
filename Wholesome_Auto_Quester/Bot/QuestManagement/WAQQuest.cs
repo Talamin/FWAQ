@@ -67,7 +67,32 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
 
         public List<IWAQTask> GetAllValidTasks()
         {
-            return GetAllTasks().FindAll(task => task.IsValid).ToList();
+            List<IWAQTask> allTasks = GetAllTasks();
+            List<IWAQTask> validTasks = allTasks.FindAll(task => task.IsValid);
+
+            // "Use item at a spot -> summons the turn-in NPC" quests (the Shaman totem "Call of Earth/Fire/Water"
+            // manifestations, etc.): the ender only exists AFTER the item is used, yet the turn-in task is generated
+            // alongside the use-item task the moment the quest becomes ToTurnIn. For a CLASS quest the priority tier
+            // (TaskPriority.Compute) sorts purely by distance and IGNORES the use-item task's higher PriorityShift, so
+            // the turn-in - often marginally closer - can be picked FIRST: the bot runs to the empty summon spot, finds
+            // nothing, benches the turn-in as "couldn't find target", and the scanner then ignores the manifestation we
+            // summon a beat later (Pulse/GetTaskMatchingWithObject skip a POI whose only task is benched, IsValid=false)
+            // - so the bot abandons the quest and wanders off to the next task.
+            //
+            // Fix (matches the intended flow: summon first, turn in second): while the quest still HOLDS the use-item's
+            // item in the bags the item hasn't been used yet, so hide the turn-in. The moment the item is consumed (no
+            // longer in inventory) the turn-in is exposed and the scanner fires it on the freshly-summoned NPC. Keyed on
+            // real inventory state (not the use-item task's own timeout) so it is robust to that task being benched, and
+            // re-evaluated every planner cycle (task generation only runs on a status change, which using the item is
+            // not). (Talamin)
+            bool useItemStepPending = allTasks.Any(task =>
+                task is WAQTaskUseItem useItem && ItemsManager.GetItemCountById((uint)useItem.ItemId) > 0);
+            if (useItemStepPending)
+            {
+                validTasks.RemoveAll(task => task.IsTurnInQuest);
+            }
+
+            return validTasks;
         }
 
         public List<IWAQTask> GetAllInvalidTasks()
@@ -292,8 +317,10 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
 
                 // A quest with no quest-log objectives (e.g. the totem "use item at a spot" steps) is flagged
                 // complete on pickup, so it lands here as ToTurnIn while the item is still un-used. If we still hold
-                // the item, drink it FIRST (it spawns/enables the turn-in NPC). WAQTaskUseItem outranks the turn-in
-                // task, so the bot uses the item, then the scanner-forced turn-in to the freshly-spawned NPC follows.
+                // the item, drink it FIRST (it spawns/enables the turn-in NPC). Both tasks are registered here, but
+                // GetAllValidTasks HIDES the turn-in until the item leaves the bags, so the bot always summons first
+                // and only then turns in on the freshly-spawned NPC (PriorityShift alone can't guarantee this: the
+                // class-quest priority tier ignores it and sorts these two co-located tasks by distance).
                 AddUseItemTasksForQuestSteps();
 
                 // Turn in quest to an NPC
