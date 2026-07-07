@@ -142,11 +142,6 @@ namespace Wholesome_Auto_Quester.Bot
                     // and pickups still happen via Travel -> WAQStateInteract on arrival, just without the priority
                     // jump. Re-enable by uncommenting if a "walked past a giver" case ever proves it earns its keep.
                     // new WAQStateGrabNearbyQuest(_objectScanner),
-                    // Scripted-zone override: inside the Death Knight start (Ebon Hold, map 609) a DK follows a
-                    // hand-authored ordered profile instead of the DB-driven quester (the chain is linear + gossip/
-                    // vehicle-scripted). Inactive for everyone else, so normal questing is untouched. Above Travel/
-                    // Interact/Kill so it owns routing in Ebon Hold; below combat/loot/regen/town which still interrupt.
-                    new WAQStateDeathKnightStart(),
                     new WAQStateTravel(_taskManager, _travelManager, _continentManager),
                     _interactState,
                     // Above Kill: while a "use item on this creature" task is still in its use phase, we use the item

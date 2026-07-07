@@ -316,8 +316,6 @@
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskExploreLocation.cs" />
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskUseItem.cs" />
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskUseItemOnCreature.cs" />
-    <Compile Include="Bot\ScriptedProfile\ScriptedProfileStep.cs" />
-    <Compile Include="Bot\ScriptedProfile\ScriptedProfileData.cs" />
     <Compile Include="Bot\FlightMasterManagement\WFMLogger.cs" />
     <Compile Include="Bot\FlightMasterManagement\FlightMaster.cs" />
     <Compile Include="Bot\FlightMasterManagement\WFMSettings.cs" />
@@ -393,7 +391,6 @@
     <Compile Include="States\WAQStateMoveToHotspot.cs" />
     <Compile Include="States\WAQStateUseItem.cs" />
     <Compile Include="States\WAQStateUseItemOnCreature.cs" />
-    <Compile Include="States\WAQStateDeathKnightStart.cs" />
     <Compile Include="States\WAQStateMoongladeTeleport.cs" />
     <Compile Include="States\WAQStateMoongladeExit.cs" />
     <Compile Include="States\WAQStatePriorityLoot.cs" />
@@ -414,7 +411,6 @@
     <EmbeddedResource Include="Database\AQ.zip" />
     <EmbeddedResource Include="Database\QuestBlacklist.json" />
     <EmbeddedResource Include="Database\QuestSteps.json" />
-    <EmbeddedResource Include="Database\DeathKnightStart.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
