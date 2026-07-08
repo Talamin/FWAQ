@@ -330,21 +330,6 @@
     "Comment": "AUTO from DB: use Wildmane Cleansing Totem at 'Wildmane Water Pump' (SPELL_FOCUS GO 2909, 17.4y from quest_poi). 'Wildmane Cleansing'."
   },
   {
-    "QuestId": 805,
-    "Action": "use-item",
-    "ItemId": 118,
-    "ItemName": "Minor Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -812.912,
-    "Y": -4940.97,
-    "Z": 20.652,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Minor Healing Potion at 'Anvil' (SPELL_FOCUS GO 104555, 23.9y from quest_poi). \"Report to Sen'jin Village\"."
-  },
-  {
     "QuestId": 870,
     "Action": "explore",
     "ItemId": 0,
@@ -883,21 +868,6 @@
     "Z": 48.428,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Jennea's Flask at 'Mirror Lake Waterwall' (SPELL_FOCUS GO 174794, 8.5y from quest_poi). 'Mirror Lake'."
-  },
-  {
-    "QuestId": 2203,
-    "Action": "use-item",
-    "ItemId": 9030,
-    "ItemName": "Restorative Potion",
-    "CompleteItemId": 7867,
-    "CompleteItemName": "Vessel of Dragon's Blood",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -6648.95,
-    "Y": -2153.67,
-    "Z": 245.475,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Restorative Potion at 'Burning Embers' (SPELL_FOCUS GO 3960, 15.2y from quest_poi). 'Badlands Reagent Run II'."
   },
   {
     "QuestId": 2240,
@@ -2745,36 +2715,6 @@
     "Comment": "AUTO from DB: use Ahuurn's Elixir at 'Anvil' (SPELL_FOCUS GO 183795, 32.3y from quest_poi). 'Messenger to the Feralfen'."
   },
   {
-    "QuestId": 9972,
-    "Action": "use-item",
-    "ItemId": 22829,
-    "ItemName": "Super Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -739.724,
-    "Y": 7903.02,
-    "Z": 54.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Super Healing Potion at 'Bonfire' (SPELL_FOCUS GO 181659, 29.4y from quest_poi). \"The Ring of Blood: Skra'gath\"."
-  },
-  {
-    "QuestId": 9973,
-    "Action": "use-item",
-    "ItemId": 22829,
-    "ItemName": "Super Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -739.724,
-    "Y": 7903.02,
-    "Z": 54.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Super Healing Potion at 'Bonfire' (SPELL_FOCUS GO 181659, 35.1y from quest_poi). 'The Ring of Blood: The Warmaul Champion'."
-  },
-  {
     "QuestId": 10166,
     "Action": "use-item",
     "ItemId": 28209,
@@ -2803,21 +2743,6 @@
     "Z": 144.08,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Archmage Vargoth's Staff at 'Stove' (SPELL_FOCUS GO 183305, 35.8y from quest_poi). 'Curse of the Violet Tower'."
-  },
-  {
-    "QuestId": 10213,
-    "Action": "use-item",
-    "ItemId": 24338,
-    "ItemName": "Hellfire Spineleaf",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -1095.4,
-    "Y": 2998.69,
-    "Z": 8.19,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Hellfire Spineleaf at 'Campfire' (SPELL_FOCUS GO 184818, 2.8y from quest_poi). 'Investigate the Crash'."
   },
   {
     "QuestId": 10269,
@@ -3105,21 +3030,6 @@
     "Comment": "AUTO from DB: use Brogg's Totem at 'Ogre Remains' (GOOBER GO 186332, 4.7y from quest_poi). 'The Essence of Enmity'."
   },
   {
-    "QuestId": 11210,
-    "Action": "use-item",
-    "ItemId": 19221,
-    "ItemName": "Darkmoon Special Reserve",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -3843.86,
-    "Y": -4633.29,
-    "Z": 9.264,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Darkmoon Special Reserve at 'Cove Cannon' (GOOBER GO 186432, 3.5y from quest_poi). \"Oh, It's Real\"."
-  },
-  {
     "QuestId": 11256,
     "Action": "use-item",
     "ItemId": 33340,
@@ -3313,21 +3223,6 @@
     "Z": -0.124,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Anuniaq's Net at 'School of Tasty Reef Fish' (SPELL_FOCUS GO 186949, 7.7y from quest_poi). 'The Way to His Heart...'."
-  },
-  {
-    "QuestId": 11604,
-    "Action": "use-item",
-    "ItemId": 40042,
-    "ItemName": "Caraway Burnwine",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 2114.56,
-    "Y": 5315.52,
-    "Z": 33.989,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Caraway Burnwine at 'Brazier' (SPELL_FOCUS GO 194953, 39.5y from quest_poi). 'A Deserter'."
   },
   {
     "QuestId": 11652,

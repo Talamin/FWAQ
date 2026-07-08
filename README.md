@@ -115,7 +115,7 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 
 ## Coverage
 
-FWAQ ships **460 curated quest steps** in `QuestSteps.json` — all DB-generated, no hand-tuning: **~50 class quests**, **183 world use-item quests**, **55 explore quests**, and **175 use-item-on-creature quests**.
+FWAQ ships **453 curated quest steps** in `QuestSteps.json` — DB-generated, with generic-consumable false positives pruned (a talk-to/kill quest must never get a bogus "use a healing potion at the nearest anvil" step): **~50 class quests**, **176 world use-item quests**, **55 explore quests**, and **175 use-item-on-creature quests**.
 
 ### Supported class quests
 
