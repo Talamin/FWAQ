@@ -90,21 +90,6 @@
     "Comment": "AUTO from DB: use Recipe: Hot Lion Chops at 'Cozy Fire' (SPELL_FOCUS GO 22606, 20.1y from quest_poi). 'Elixir of Pain'."
   },
   {
-    "QuestId": 513,
-    "Action": "use-item",
-    "ItemId": 2459,
-    "ItemName": "Swiftness Potion",
-    "CompleteItemId": 3506,
-    "CompleteItemName": "Mudsnout Composite",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": 1475.09,
-    "Y": 429.974,
-    "Z": -68.889,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Swiftness Potion at 'Doodad_UndercityWorm01' (GOOBER GO 177884, 48.1y from quest_poi). 'Elixir of Agony'."
-  },
-  {
     "QuestId": 592,
     "Action": "use-item",
     "ItemId": 3912,
@@ -178,21 +163,6 @@
     "Z": -29.625,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Wildmane Cleansing Totem at 'Wildmane Water Pump' (SPELL_FOCUS GO 2909, 17.4y from quest_poi). 'Wildmane Cleansing'."
-  },
-  {
-    "QuestId": 805,
-    "Action": "use-item",
-    "ItemId": 118,
-    "ItemName": "Minor Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -812.912,
-    "Y": -4940.97,
-    "Z": 20.652,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Minor Healing Potion at 'Anvil' (SPELL_FOCUS GO 104555, 23.9y from quest_poi). \"Report to Sen'jin Village\"."
   },
   {
     "QuestId": 921,
@@ -598,21 +568,6 @@
     "Z": 48.428,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Jennea's Flask at 'Mirror Lake Waterwall' (SPELL_FOCUS GO 174794, 8.5y from quest_poi). 'Mirror Lake'."
-  },
-  {
-    "QuestId": 2203,
-    "Action": "use-item",
-    "ItemId": 9030,
-    "ItemName": "Restorative Potion",
-    "CompleteItemId": 7867,
-    "CompleteItemName": "Vessel of Dragon's Blood",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -6648.95,
-    "Y": -2153.67,
-    "Z": 245.475,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Restorative Potion at 'Burning Embers' (SPELL_FOCUS GO 3960, 15.2y from quest_poi). 'Badlands Reagent Run II'."
   },
   {
     "QuestId": 2479,
@@ -2190,36 +2145,6 @@
     "Comment": "AUTO from DB: use Ahuurn's Elixir at 'Anvil' (SPELL_FOCUS GO 183795, 32.3y from quest_poi). 'Messenger to the Feralfen'."
   },
   {
-    "QuestId": 9972,
-    "Action": "use-item",
-    "ItemId": 22829,
-    "ItemName": "Super Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -739.724,
-    "Y": 7903.02,
-    "Z": 54.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Super Healing Potion at 'Bonfire' (SPELL_FOCUS GO 181659, 29.4y from quest_poi). \"The Ring of Blood: Skra'gath\"."
-  },
-  {
-    "QuestId": 9973,
-    "Action": "use-item",
-    "ItemId": 22829,
-    "ItemName": "Super Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -739.724,
-    "Y": 7903.02,
-    "Z": 54.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Super Healing Potion at 'Bonfire' (SPELL_FOCUS GO 181659, 35.1y from quest_poi). 'The Ring of Blood: The Warmaul Champion'."
-  },
-  {
     "QuestId": 10166,
     "Action": "use-item",
     "ItemId": 28209,
@@ -2248,21 +2173,6 @@
     "Z": 144.08,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Archmage Vargoth's Staff at 'Stove' (SPELL_FOCUS GO 183305, 35.8y from quest_poi). 'Curse of the Violet Tower'."
-  },
-  {
-    "QuestId": 10213,
-    "Action": "use-item",
-    "ItemId": 24338,
-    "ItemName": "Hellfire Spineleaf",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -1095.4,
-    "Y": 2998.69,
-    "Z": 8.19,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Hellfire Spineleaf at 'Campfire' (SPELL_FOCUS GO 184818, 2.8y from quest_poi). 'Investigate the Crash'."
   },
   {
     "QuestId": 10275,
@@ -2520,21 +2430,6 @@
     "Comment": "AUTO from DB: use Brogg's Totem at 'Ogre Remains' (GOOBER GO 186332, 4.7y from quest_poi). 'The Essence of Enmity'."
   },
   {
-    "QuestId": 11210,
-    "Action": "use-item",
-    "ItemId": 19221,
-    "ItemName": "Darkmoon Special Reserve",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -3843.86,
-    "Y": -4633.29,
-    "Z": 9.264,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Darkmoon Special Reserve at 'Cove Cannon' (GOOBER GO 186432, 3.5y from quest_poi). \"Oh, It's Real\"."
-  },
-  {
     "QuestId": 11256,
     "Action": "use-item",
     "ItemId": 33340,
@@ -2773,21 +2668,6 @@
     "Z": 22.417,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Dark Iron Ale Mug at 'Complimentary Brewfest Sampler' (GOOBER GO 186189, 17.9y from quest_poi). 'The Best of Brews'."
-  },
-  {
-    "QuestId": 11604,
-    "Action": "use-item",
-    "ItemId": 40042,
-    "ItemName": "Caraway Burnwine",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 2114.56,
-    "Y": 5315.52,
-    "Z": 33.989,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Caraway Burnwine at 'Brazier' (SPELL_FOCUS GO 194953, 39.5y from quest_poi). 'A Deserter'."
   },
   {
     "QuestId": 11657,
@@ -3390,21 +3270,6 @@
     "Comment": "AUTO from DB: use Rejek's Vial at 'Sholazar Pillar Focus' (SPELL_FOCUS GO 191141, 3.4y from quest_poi). \"The Heartblood's Strength\"."
   },
   {
-    "QuestId": 12936,
-    "Action": "use-item",
-    "ItemId": 33447,
-    "ItemName": "Runic Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 5850.67,
-    "Y": -3038.08,
-    "Z": 307.922,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Runic Healing Potion at 'Torch' (SPELL_FOCUS GO 192614, 22.2y from quest_poi). 'The Amphitheater of Anguish: Korrak the Bloodrager!'."
-  },
-  {
     "QuestId": 13100,
     "Action": "use-item",
     "ItemId": 43101,
@@ -3583,21 +3448,6 @@
     "Z": 128.27,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Hourglass of Eternity at 'Bronze Dragonshrine Sands Spell Focus' (SPELL_FOCUS GO 190202, 9.0y from quest_poi). 'Mystery of the Infinite, Redux'."
-  },
-  {
-    "QuestId": 13571,
-    "Action": "use-item",
-    "ItemId": 39520,
-    "ItemName": "Kungaloosh",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 5892.15,
-    "Y": 677.009,
-    "Z": 643.68,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Kungaloosh at 'Lamp Post' (GOOBER GO 192853, 7.8y from quest_poi). \"Fletcher's Lost and Found\"."
   },
   {
     "QuestId": 13603,

@@ -67,13 +67,24 @@ def clean(s):
 # ---------- item_template: on-use items + names ----------
 itxt = rd('item_template.sql'); ic = col_index(itxt)
 I_ENTRY, I_NAME, I_SP1, I_TRG1 = ic['entry'], ic['name'], ic['spellid_1'], ic['spelltrigger_1']
+I_CLASS, I_SUB = ic['class'], ic['subclass']
+# Generic class-0 (Consumable) subclasses whose on-use spell is a self heal/buff, NEVER a quest "use it HERE":
+# 1 Potion, 2 Elixir, 3 Flask, 5 Food & Drink, 7 Bandage. Excluding them stops false-positive steps like
+# "use Minor Healing Potion at the Anvil" on talk-to/kill quests (e.g. 805 Report to Sen'jin Village) that
+# merely carry -- or follow a quest that rewards -- such a consumable. Real quest use-items are class 12
+# (Quest) / 15 (Misc) or a class-0 subclass we keep. (Talamin)
+GENERIC_CONSUMABLE_SUB = {1, 2, 3, 5, 7}
 use_items = set(); item_name = {}
+n_skipped_generic = 0
 for row in iter_rows(itxt):
     f = split_fields(row)
-    if len(f) <= I_TRG1: continue
+    if len(f) <= max(I_TRG1, I_CLASS, I_SUB): continue
     e = ival(f[I_ENTRY]); item_name[e] = clean(f[I_NAME])
-    if ival(f[I_SP1]) > 0 and ival(f[I_TRG1]) == 0: use_items.add(e)
-print(f"item_template: {len(item_name)} items, {len(use_items)} on-use")
+    if ival(f[I_SP1]) > 0 and ival(f[I_TRG1]) == 0:
+        if ival(f[I_CLASS]) == 0 and ival(f[I_SUB]) in GENERIC_CONSUMABLE_SUB:
+            n_skipped_generic += 1; continue
+        use_items.add(e)
+print(f"item_template: {len(item_name)} items, {len(use_items)} on-use ({n_skipped_generic} generic consumables excluded)")
 
 # ---------- loot tables: item ids obtainable by loot (=> the base quester CAN derive an objective) ----------
 lootable = set()

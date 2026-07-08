@@ -90,66 +90,6 @@
     "Comment": "AUTO from DB: use Coarse Sharpening Stone at 'Anvil' (SPELL_FOCUS GO 34029, 13.3y from quest_poi). \"In Defense of the King's Lands\"."
   },
   {
-    "QuestId": 218,
-    "Action": "use-item",
-    "ItemId": 961,
-    "ItemName": "Healing Herb",
-    "CompleteItemId": 2004,
-    "CompleteItemName": "Grelin Whitebeard's Journal",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -6372.62,
-    "Y": 571.351,
-    "Z": 385.672,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Healing Herb at 'Fire' (SPELL_FOCUS GO 1766, 10.6y from quest_poi). 'The Stolen Journal'."
-  },
-  {
-    "QuestId": 237,
-    "Action": "use-item",
-    "ItemId": 414,
-    "ItemName": "Dalaran Sharp",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -6157.06,
-    "Y": -2966.53,
-    "Z": 210.379,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Dalaran Sharp at 'Dwarven Campfire' (SPELL_FOCUS GO 48556, 7.8y from quest_poi). \"In Defense of the King's Lands\"."
-  },
-  {
-    "QuestId": 263,
-    "Action": "use-item",
-    "ItemId": 858,
-    "ItemName": "Lesser Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -5855.47,
-    "Y": -2642.44,
-    "Z": 308.974,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Lesser Healing Potion at 'Anvil' (SPELL_FOCUS GO 34026, 2.9y from quest_poi). \"In Defense of the King's Lands\"."
-  },
-  {
-    "QuestId": 275,
-    "Action": "use-item",
-    "ItemId": 4606,
-    "ItemName": "Spongy Morel",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -3101.83,
-    "Y": -2273.5,
-    "Z": 9.498,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Spongy Morel at 'Campfire' (SPELL_FOCUS GO 1879, 15.8y from quest_poi). 'Blisters on The Land'."
-  },
-  {
     "QuestId": 325,
     "Action": "use-item",
     "ItemId": 7297,
@@ -165,21 +105,6 @@
     "Comment": "AUTO from DB: use Morbent's Bane at 'Campfire' (SPELL_FOCUS GO 1798, 3.8y from quest_poi). 'Armed and Ready'."
   },
   {
-    "QuestId": 368,
-    "Action": "use-item",
-    "ItemId": 3382,
-    "ItemName": "Weak Troll's Blood Elixir",
-    "CompleteItemId": 2859,
-    "CompleteItemName": "Vile Fin Scale",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": 2256.37,
-    "Y": 348.58,
-    "Z": 35.957,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Weak Troll's Blood Elixir at 'Cozy Fire' (SPELL_FOCUS GO 3797, 3.1y from quest_poi). 'A New Plague'."
-  },
-  {
     "QuestId": 369,
     "Action": "use-item",
     "ItemId": 3434,
@@ -193,21 +118,6 @@
     "Z": 35.957,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Slumber Sand at 'Cozy Fire' (SPELL_FOCUS GO 3797, 3.1y from quest_poi). 'A New Plague'."
-  },
-  {
-    "QuestId": 382,
-    "Action": "use-item",
-    "ItemId": 159,
-    "ItemName": "Refreshing Spring Water",
-    "CompleteItemId": 2885,
-    "CompleteItemName": "Scarlet Crusade Documents",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": 1838.09,
-    "Y": 1564.02,
-    "Z": 96.518,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Refreshing Spring Water at 'Cozy Fire' (SPELL_FOCUS GO 3797, 19.3y from quest_poi). 'The Red Messenger'."
   },
   {
     "QuestId": 430,
@@ -240,21 +150,6 @@
     "Comment": "AUTO from DB: use Medium Armor Kit at 'Fiery Brazier' (SPELL_FOCUS GO 37092, 6.5y from quest_poi). 'Assault on Fenris Isle'."
   },
   {
-    "QuestId": 450,
-    "Action": "use-item",
-    "ItemId": 3448,
-    "ItemName": "Senggin Root",
-    "CompleteItemId": 3255,
-    "CompleteItemName": "Berard's Journal",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -381.727,
-    "Y": 1656.18,
-    "Z": 17.874,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Senggin Root at 'Cozy Fire' (SPELL_FOCUS GO 22711, 11.2y from quest_poi). 'A Recipe For Death'."
-  },
-  {
     "QuestId": 489,
     "Action": "use-item",
     "ItemId": 5457,
@@ -283,21 +178,6 @@
     "Z": 55.575,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Recipe: Hot Lion Chops at 'Cozy Fire' (SPELL_FOCUS GO 22606, 20.1y from quest_poi). 'Elixir of Pain'."
-  },
-  {
-    "QuestId": 513,
-    "Action": "use-item",
-    "ItemId": 2459,
-    "ItemName": "Swiftness Potion",
-    "CompleteItemId": 3506,
-    "CompleteItemName": "Mudsnout Composite",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": 1475.09,
-    "Y": 429.974,
-    "Z": -68.889,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Swiftness Potion at 'Doodad_UndercityWorm01' (GOOBER GO 177884, 48.1y from quest_poi). 'Elixir of Agony'."
   },
   {
     "QuestId": 553,
@@ -448,21 +328,6 @@
     "Z": 245.475,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Sign of the Earth at 'Burning Embers' (SPELL_FOCUS GO 3960, 3.4y from quest_poi). 'Broken Alliances'."
-  },
-  {
-    "QuestId": 805,
-    "Action": "use-item",
-    "ItemId": 118,
-    "ItemName": "Minor Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -812.912,
-    "Y": -4940.97,
-    "Z": 20.652,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Minor Healing Potion at 'Anvil' (SPELL_FOCUS GO 104555, 23.9y from quest_poi). \"Report to Sen'jin Village\"."
   },
   {
     "QuestId": 849,
@@ -735,21 +600,6 @@
     "Comment": "AUTO from DB: use Filled Etched Phial at 'Burning Embers' (SPELL_FOCUS GO 50805, 1.7y from quest_poi). 'The Sacred Flame'."
   },
   {
-    "QuestId": 1206,
-    "Action": "use-item",
-    "ItemId": 6807,
-    "ItemName": "Frog Leg Stew",
-    "CompleteItemId": 5884,
-    "CompleteItemName": "Unpopped Darkmist Eye",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -2945.47,
-    "Y": -3898.99,
-    "Z": 34.968,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Frog Leg Stew at 'Cozy Fire' (SPELL_FOCUS GO 3797, 15.9y from quest_poi). 'Jarl Needs Eyes'."
-  },
-  {
     "QuestId": 1435,
     "Action": "use-item",
     "ItemId": 6436,
@@ -763,21 +613,6 @@
     "Z": 128.514,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Burning Gem at 'Fierce Blaze' (SPELL_FOCUS GO 174846, 20.8y from quest_poi). 'The Burning of Spirits'."
-  },
-  {
-    "QuestId": 1456,
-    "Action": "use-item",
-    "ItemId": 34130,
-    "ItemName": "Recovery Diver's Potion",
-    "CompleteItemId": 6245,
-    "CompleteItemName": "Karnitol's Satchel",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -76.645,
-    "Y": 2685.81,
-    "Z": -99.104,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Recovery Diver's Potion at 'Bubbly Fissure' (SPELL_FOCUS GO 177524, 8.9y from quest_poi). 'The Karnitol Shipwreck'."
   },
   {
     "QuestId": 1471,
@@ -808,21 +643,6 @@
     "Z": -63.781,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Pure Hearts at 'Summoning Circle' (SPELL_FOCUS GO 37097, 1.2y from quest_poi). 'The Binding'."
-  },
-  {
-    "QuestId": 1491,
-    "Action": "use-item",
-    "ItemId": 5342,
-    "ItemName": "Raptor Punch",
-    "CompleteItemId": 6464,
-    "CompleteItemName": "Wailing Essence",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -925.451,
-    "Y": -3690.82,
-    "Z": 8.125,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Raptor Punch at 'Anvil' (SPELL_FOCUS GO 169968, 7.1y from quest_poi). 'Smart Drinks'."
   },
   {
     "QuestId": 1504,
@@ -1033,21 +853,6 @@
     "Z": 48.428,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Jennea's Flask at 'Mirror Lake Waterwall' (SPELL_FOCUS GO 174794, 8.5y from quest_poi). 'Mirror Lake'."
-  },
-  {
-    "QuestId": 2203,
-    "Action": "use-item",
-    "ItemId": 9030,
-    "ItemName": "Restorative Potion",
-    "CompleteItemId": 7867,
-    "CompleteItemName": "Vessel of Dragon's Blood",
-    "ObjectiveIndex": 1,
-    "Map": 0,
-    "X": -6648.95,
-    "Y": -2153.67,
-    "Z": 245.475,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Restorative Potion at 'Burning Embers' (SPELL_FOCUS GO 3960, 15.2y from quest_poi). 'Badlands Reagent Run II'."
   },
   {
     "QuestId": 2478,
@@ -3255,36 +3060,6 @@
     "Comment": "AUTO from DB: use Antheol's Disciplinary Rod at \"Pilgrim's Bounty Cooking Fire\" (SPELL_FOCUS GO 195200, 44.4y from quest_poi). 'Swift Discipline'."
   },
   {
-    "QuestId": 9140,
-    "Action": "use-item",
-    "ItemId": 23444,
-    "ItemName": "Goldenmist Special Brew",
-    "CompleteItemId": 22566,
-    "CompleteItemName": "Phantasmal Substance",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 7318.94,
-    "Y": -5811.11,
-    "Z": 36.565,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Goldenmist Special Brew at 'Brazier' (SPELL_FOCUS GO 184241, 4.0y from quest_poi). 'Windrunner Village'."
-  },
-  {
-    "QuestId": 9163,
-    "Action": "use-item",
-    "ItemId": 858,
-    "ItemName": "Lesser Healing Potion",
-    "CompleteItemId": 22590,
-    "CompleteItemName": "Night Elf Plans: An'daroth",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 7681.68,
-    "Y": -5717.88,
-    "Z": 3.267,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Lesser Healing Potion at 'Moonwell' (SPELL_FOCUS GO 177281, 20.9y from quest_poi). 'Into Occupied Territory'."
-  },
-  {
     "QuestId": 9174,
     "Action": "use-item",
     "ItemId": 22675,
@@ -3388,21 +3163,6 @@
     "Z": 86.349,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Inoculating Crystal at 'Bonfire' (SPELL_FOCUS GO 181494, 5.4y from quest_poi). 'Inoculation'."
-  },
-  {
-    "QuestId": 9356,
-    "Action": "use-item",
-    "ItemId": 29292,
-    "ItemName": "Helboar Bacon",
-    "CompleteItemId": 23239,
-    "CompleteItemName": "Plump Buzzard Wing",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -1095.4,
-    "Y": 2998.69,
-    "Z": 8.19,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Helboar Bacon at 'Campfire' (SPELL_FOCUS GO 184818, 2.8y from quest_poi). 'Smooth as Butter'."
   },
   {
     "QuestId": 9361,
@@ -3990,36 +3750,6 @@
     "Comment": "AUTO from DB: use Water Sample Flask at 'Bloodmyst Water Focus' (SPELL_FOCUS GO 182074, 28.1y from quest_poi). \"Don't Drink the Water\"."
   },
   {
-    "QuestId": 9774,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 24375,
-    "CompleteItemName": "Thick Hydra Scale",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -356.765,
-    "Y": 5528.44,
-    "Z": 84.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Bogblossom' (GOOBER GO 185500, 28.7y from quest_poi). 'Thick Hydra Scales'."
-  },
-  {
-    "QuestId": 9781,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -356.765,
-    "Y": 5528.44,
-    "Z": 84.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Bogblossom' (GOOBER GO 185500, 28.7y from quest_poi). 'Too Many Mouths to Feed'."
-  },
-  {
     "QuestId": 9803,
     "Action": "use-item",
     "ItemId": 24428,
@@ -4080,36 +3810,6 @@
     "Comment": "AUTO from DB: use Violet Scrying Crystal at 'Underground Water Source Focus' (SPELL_FOCUS GO 182187, 2.5y from quest_poi). 'Arcane Disturbances'."
   },
   {
-    "QuestId": 9834,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 24486,
-    "CompleteItemName": "Fenclaw Hide",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 998.009,
-    "Y": 7345.04,
-    "Z": 36.516,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Cookpot' (SPELL_FOCUS GO 182571, 44.4y from quest_poi). 'Natural Armor'."
-  },
-  {
-    "QuestId": 9845,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 268.303,
-    "Y": 7854.4,
-    "Z": 23.869,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Bonfire' (SPELL_FOCUS GO 182561, 4.7y from quest_poi). 'Angling to Beat the Competition'."
-  },
-  {
     "QuestId": 9847,
     "Action": "use-item",
     "ItemId": 24498,
@@ -4138,51 +3838,6 @@
     "Z": -0.196,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Torch of Liquid Fire at 'Brazier' (SPELL_FOCUS GO 181451, 36.9y from quest_poi). 'Stopping the Spread'."
-  },
-  {
-    "QuestId": 9903,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 268.303,
-    "Y": 7854.4,
-    "Z": 23.869,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Bonfire' (SPELL_FOCUS GO 182561, 4.7y from quest_poi). 'The Biggest of Them All'."
-  },
-  {
-    "QuestId": 9904,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 268.303,
-    "Y": 7854.4,
-    "Z": 23.869,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Bonfire' (SPELL_FOCUS GO 182561, 4.7y from quest_poi). 'Pursuing Terrorclaw'."
-  },
-  {
-    "QuestId": 9905,
-    "Action": "use-item",
-    "ItemId": 25539,
-    "ItemName": "Potion of Water Breathing",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": 998.009,
-    "Y": 7345.04,
-    "Z": 36.516,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Potion of Water Breathing at 'Cookpot' (SPELL_FOCUS GO 182571, 44.4y from quest_poi). \"Maktu's Revenge\"."
   },
   {
     "QuestId": 9910,
@@ -4243,36 +3898,6 @@
     "Z": 33.819,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Damp Woolen Blanket at 'Blazing Warmaul Pyre' (SPELL_FOCUS GO 182369, 0.7y from quest_poi). 'Body of Evidence'."
-  },
-  {
-    "QuestId": 9972,
-    "Action": "use-item",
-    "ItemId": 22829,
-    "ItemName": "Super Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -739.724,
-    "Y": 7903.02,
-    "Z": 54.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Super Healing Potion at 'Bonfire' (SPELL_FOCUS GO 181659, 29.4y from quest_poi). \"The Ring of Blood: Skra'gath\"."
-  },
-  {
-    "QuestId": 9973,
-    "Action": "use-item",
-    "ItemId": 22829,
-    "ItemName": "Super Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -739.724,
-    "Y": 7903.02,
-    "Z": 54.973,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Super Healing Potion at 'Bonfire' (SPELL_FOCUS GO 181659, 35.1y from quest_poi). 'The Ring of Blood: The Warmaul Champion'."
   },
   {
     "QuestId": 9975,
@@ -4545,21 +4170,6 @@
     "Comment": "AUTO from DB: use To'arch's Primers at 'Portal Kruul' (GOOBER GO 184289, 0.1y from quest_poi). 'Disrupt Their Reinforcements'."
   },
   {
-    "QuestId": 10213,
-    "Action": "use-item",
-    "ItemId": 24338,
-    "ItemName": "Hellfire Spineleaf",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 530,
-    "X": -1095.4,
-    "Y": 2998.69,
-    "Z": 8.19,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Hellfire Spineleaf at 'Campfire' (SPELL_FOCUS GO 184818, 2.8y from quest_poi). 'Investigate the Crash'."
-  },
-  {
     "QuestId": 10226,
     "Action": "use-item",
     "ItemId": 28547,
@@ -4772,8 +4382,8 @@
   {
     "QuestId": 10324,
     "Action": "use-item",
-    "ItemId": 24105,
-    "ItemName": "Roasted Moongraze Tenderloin",
+    "ItemId": 27686,
+    "ItemName": "Recipe: Roasted Moongraze Tenderloin",
     "CompleteItemId": 23677,
     "CompleteItemName": "Moongraze Buck Hide",
     "ObjectiveIndex": 1,
@@ -4782,7 +4392,7 @@
     "Y": -12504.5,
     "Z": 44.361,
     "Tolerance": 0,
-    "Comment": "AUTO from DB: use Roasted Moongraze Tenderloin at 'Water Barrel' (GOOBER GO 186234, 28.2y from quest_poi). 'The Great Moongraze Hunt'."
+    "Comment": "AUTO from DB: use Recipe: Roasted Moongraze Tenderloin at 'Water Barrel' (GOOBER GO 186234, 28.2y from quest_poi). 'The Great Moongraze Hunt'."
   },
   {
     "QuestId": 10335,
@@ -6465,21 +6075,6 @@
     "Comment": "AUTO from DB: use Tabetha's Torch at 'Grimtotem Tent' (SPELL_FOCUS GO 186310, 0.2y from quest_poi). 'Raze Direhorn Post!'."
   },
   {
-    "QuestId": 11210,
-    "Action": "use-item",
-    "ItemId": 19221,
-    "ItemName": "Darkmoon Special Reserve",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 1,
-    "X": -3843.86,
-    "Y": -4633.29,
-    "Z": 9.264,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Darkmoon Special Reserve at 'Cove Cannon' (GOOBER GO 186432, 3.5y from quest_poi). \"Oh, It's Real\"."
-  },
-  {
     "QuestId": 11218,
     "Action": "use-item",
     "ItemId": 33190,
@@ -7483,21 +7078,6 @@
     "Z": 77.748,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Arcane Binder at 'Arcane Prison' (GOOBER GO 187561, 36.6y from quest_poi). 'Abduction'."
-  },
-  {
-    "QuestId": 11604,
-    "Action": "use-item",
-    "ItemId": 40042,
-    "ItemName": "Caraway Burnwine",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 2114.56,
-    "Y": 5315.52,
-    "Z": 33.989,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Caraway Burnwine at 'Brazier' (SPELL_FOCUS GO 194953, 39.5y from quest_poi). 'A Deserter'."
   },
   {
     "QuestId": 11608,
@@ -9945,21 +9525,6 @@
     "Comment": "AUTO from DB: use Scepter of Domination at 'Brazier' (SPELL_FOCUS GO 190504, 12.7y from quest_poi). 'Betrayal'."
   },
   {
-    "QuestId": 12718,
-    "Action": "use-item",
-    "ItemId": 39327,
-    "ItemName": "Noth's Special Brew",
-    "CompleteItemId": 39328,
-    "CompleteItemName": "Crusader Skull",
-    "ObjectiveIndex": 1,
-    "Map": 609,
-    "X": 1812.36,
-    "Y": -5993.55,
-    "Z": 117.656,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Noth's Special Brew at 'Anvil' (SPELL_FOCUS GO 148958, 10.5y from quest_poi). 'More Skulls For Brew'."
-  },
-  {
     "QuestId": 12721,
     "Action": "use-item",
     "ItemId": 39434,
@@ -10348,21 +9913,6 @@
     "Z": 1184.76,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use Brann's Communicator at 'Campfire' (SPELL_FOCUS GO 193599, 9.3y from quest_poi). 'Catching up with Brann'."
-  },
-  {
-    "QuestId": 12936,
-    "Action": "use-item",
-    "ItemId": 33447,
-    "ItemName": "Runic Healing Potion",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 5850.67,
-    "Y": -3038.08,
-    "Z": 307.922,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Runic Healing Potion at 'Torch' (SPELL_FOCUS GO 192614, 22.2y from quest_poi). 'The Amphitheater of Anguish: Korrak the Bloodrager!'."
   },
   {
     "QuestId": 12939,
@@ -11353,21 +10903,6 @@
     "Z": 350.327,
     "Tolerance": 0,
     "Comment": "AUTO from DB: use To'kini's Blowgun at 'Blue Cauldron' (GOOBER GO 190618, 48.3y from quest_poi). 'Tails Up'."
-  },
-  {
-    "QuestId": 13571,
-    "Action": "use-item",
-    "ItemId": 39520,
-    "ItemName": "Kungaloosh",
-    "CompleteItemId": 0,
-    "CompleteItemName": "",
-    "ObjectiveIndex": 1,
-    "Map": 571,
-    "X": 5892.15,
-    "Y": 677.009,
-    "Z": 643.68,
-    "Tolerance": 0,
-    "Comment": "AUTO from DB: use Kungaloosh at 'Lamp Post' (GOOBER GO 192853, 7.8y from quest_poi). \"Fletcher's Lost and Found\"."
   },
   {
     "QuestId": 13603,

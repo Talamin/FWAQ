@@ -49,7 +49,7 @@ Some class quests legitimately cross continents (the shaman **Water** totem fill
 
 ### 6. Dev-time enrichment tool
 [`tools/generate_classquest_steps.py`](tools/generate_classquest_steps.py) reads the raw AzerothCore world-DB dumps and **generates** the use-item coordinate data. It:
-- detects use-item quests DB-wide (an item with an on-use spell — `spellid_1 > 0 && spelltrigger_1 == 0` — as the quest's SourceItem or the previous quest's reward),
+- detects use-item quests DB-wide (an item with an on-use spell — `spellid_1 > 0 && spelltrigger_1 == 0` — as the quest's SourceItem or the previous quest's reward), **excluding generic class-0 consumables** (potions/elixirs/flasks/food/bandages) whose on-use spell is a self heal/buff — those produced bogus "use a healing potion at the nearest anvil" steps on talk-to/kill quests,
 - finds the nearest `SPELL_FOCUS`/`GOOBER` GameObject to each quest's `quest_poi`,
 - and (companion generator) detects **"use item on a creature"** quests — an on-use item + a `RequiredNpcOrGo` creature that spawns in the world — validated against the exported `AQ.json` so only targets the quester can actually see are shipped,
 - emits the shippable `QuestSteps.json`.
