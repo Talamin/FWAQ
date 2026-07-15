@@ -51,7 +51,7 @@ Some class quests legitimately cross continents (the shaman **Water** totem fill
 [`tools/generate_classquest_steps.py`](tools/generate_classquest_steps.py) reads the raw AzerothCore world-DB dumps and **generates** the use-item coordinate data. It:
 - detects use-item quests DB-wide (an item with an on-use spell — `spellid_1 > 0 && spelltrigger_1 == 0` — as the quest's SourceItem or the previous quest's reward), **excluding generic class-0 consumables** (potions/elixirs/flasks/food/bandages) whose on-use spell is a self heal/buff — those produced bogus "use a healing potion at the nearest anvil" steps on talk-to/kill quests,
 - finds the nearest `SPELL_FOCUS`/`GOOBER` GameObject to each quest's `quest_poi`,
-- and (companion generator) detects **"use item on a creature"** quests — an on-use item + a `RequiredNpcOrGo` creature that spawns in the world — validated against the exported `AQ.json` so only targets the quester can actually see are shipped,
+- and a companion generator, [`tools/generate_useitem_on_npc_steps.py`](tools/generate_useitem_on_npc_steps.py), detects **"use item on a creature / on a GameObject"** quests: the quest's **source item** has an on-use spell and the target is one of the quest's `RequiredNpcOrGo` credits. Targets with **zero world spawns** (summoned demons, "weakened" boss variants) are held for review instead of shipped — the runtime can only act on spawned targets. Ambiguous cases (multi-credit quests, items from other sources) also land in review files, never silently in the shipped data,
 - emits the shippable `QuestSteps.json`.
 
 The heavy DB never ships — only the small generated JSON is embedded in the product.
@@ -69,6 +69,14 @@ Two runtime paths, chosen automatically per target:
 - **Attackable target** → use the item, then the normal kill/loot flow finishes it.
 - **Friendly / non-attackable target** (e.g. a sleeping peon) → a subtle gap the base quester **can't** cover: it only builds a kill-objective for *attackable* creatures, so a friendly target gets no objective at all and is silently ignored. FWAQ generates the task **straight from the step data + the creature's spawns**, uses the item, and **briefly blacklists each awakened target's GUID** so the bot moves on to the next *sleeping* one instead of re-hitting an already-credited peon.
 
+### 10. DB-driven "use item ON a GameObject" quests
+The fourth member of the use-item family: quests where the item is used **on/at a world-spawned GameObject** (e.g. the *Explosive Stick of Gann* on the Bael Modan Flying Machine). When a `use-item-on-go` step exists, FWAQ replaces the native "click the object" task with a dedicated one that walks into use range and uses the item **near** the GO — deliberately *without* clicking it first, which would trigger the object's own use effect instead of the item's.
+
+### 11. Calmer routing — re-path only when something changes
+Two planner fixes that remove the stop-start route churn that was visible while travelling:
+- **Re-path guard** (`WAQStateMoveToHotspot`) — the old "am I still heading there?" check compared the live path end against the hotspot in 3D with a 5-yard tolerance. At ridge/cliff targets the navmesh end node alternates between stacked surfaces (>5 y apart in Z), so the bot stopped and re-pathed every ~1–2 s for the whole leg. It now re-paths only when movement ended, the **active task changed**, or a throttled **2D** sanity check says the current path goes somewhere else entirely.
+- **Task hysteresis** (`TaskManager`) — two near-equidistant tasks in the same cluster used to alternate as "closest" with every step the character takes, each switch costing a stop + re-path (ending in "Avoid back and forth" timeouts). The current task is now kept until a same-cluster challenger is meaningfully (~25%+) closer.
+
 ---
 
 ## Full list of changes vs. upstream
@@ -79,6 +87,7 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 - Class-quest **priority tier** — a dedicated must-do tier below all ordinary tasks (`TaskPriority`, `TaskManager`), so class quests always progress, even across continents.
 - **Use-item quests** — new `Bot/TaskManagement/Tasks/WAQTaskUseItem.cs` + `States/WAQStateUseItem.cs` with the adaptive approach (GoToTask precise → direct `MovementManager.MoveTo` push).
 - **Use-item-on-creature quests** — new `Bot/TaskManagement/Tasks/WAQTaskUseItemOnCreature.cs` + `States/WAQStateUseItemOnCreature.cs`; the scanner task starts in a `UseItemOnTarget` interaction and, after the item lands, either flips to kill/loot (attackable) or blacklists the credited target and moves on (friendly). Friendly targets are generated straight from the step + `RequiredNpcOrGo` template spawns, since `ModelQuestTemplate` builds a kill-objective only for *attackable* creatures.
+- **Use-item-on-gameobject quests** — new `Bot/TaskManagement/Tasks/WAQTaskUseItemOnGameObject.cs` + a GameObject branch in `WAQStateUseItemOnCreature`; replaces the native interact task in the `InteractObjectives` loop when a `use-item-on-go` step exists (`WAQQuest.UseItemOnGoStepFor`).
 - An `IsClassQuest` flag threaded through **every** task type (`IWAQTask`, `WAQBaseTask`, all `WAQTask*`).
 
 **New embedded data + loaders**
@@ -102,6 +111,7 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 
 **Planner / navigation**
 - **Bulk / batch questing** — cluster nearby open quest work (~80 y) and finish it before travelling on (`TaskManager`).
+- **Calmer routing** — `WAQStateMoveToHotspot` re-paths only on movement end / active-task change / a throttled 2D staleness check (no more once-a-second StopMove+FindPath loops at ridge targets); `TaskManager` keeps the current task until a same-cluster challenger is meaningfully closer (no more A/B task flapping).
 - **Recommended off-mesh connections** — added an Orgrimmar ledge (Valley of Wisdom, near Thrall) bidirectional off-mesh to the shared recommended set (`Wholesome-Toolbox/WTSettings.cs`), so navigation to the finale turn-in works both ways.
 - **"Grab a quest you're walking past"** state (`States/WAQStateGrabNearbyQuest.cs`) — **currently disabled**: it only acted on the scanner's already-active task (duplicating Travel + Interact at a higher priority) and preempted town/train errands, so it's unregistered from the FSM. Turn-ins/pickups still happen on arrival via Travel → Interact.
 
@@ -115,7 +125,7 @@ A granular reference of everything FWAQ changes on top of the base quester (file
 
 ## Coverage
 
-FWAQ ships **453 curated quest steps** in `QuestSteps.json` — DB-generated, with generic-consumable false positives pruned (a talk-to/kill quest must never get a bogus "use a healing potion at the nearest anvil" step): **~50 class quests**, **176 world use-item quests**, **55 explore quests**, and **175 use-item-on-creature quests**.
+FWAQ ships **499 curated quest steps** in `QuestSteps.json` — DB-generated, with generic-consumable false positives pruned (a talk-to/kill quest must never get a bogus "use a healing potion at the nearest anvil" step): **~50 class quests**, **~173 world use-item quests**, **55 explore quests**, **211 use-item-on-creature quests**, and **10 use-item-on-gameobject quests**.
 
 ### Supported class quests
 
@@ -130,9 +140,10 @@ FWAQ ships **453 curated quest steps** in `QuestSteps.json` — DB-generated, wi
 
 ### World quests
 
-- **183 use-item quests** — e.g. the **Cleansing Totem** chain (Winterhoof / Thunderhorn / Wildmane), phials at moonwells, gems & recipes at anvils and cooking fires, *Dartol's Rod of Transformation*.
+- **~173 use-item quests** — e.g. the **Cleansing Totem** chain (Winterhoof / Thunderhorn / Wildmane), phials at moonwells, gems & recipes at anvils and cooking fires, *Dartol's Rod of Transformation*.
 - **55 explore ("reach an area") quests** — a category the base quester couldn't do at all (it ships no areatrigger data).
-- **175 use-item-on-creature quests** — use a quest item on a world-spawned target, e.g. **"Lazy Peons"** (awaken sleeping peons — a *friendly* target the base quester ignores entirely), *Dartol's Rod* on Ran Bloodtooth, and ~170 more. Summon-only targets (no world spawn) are deliberately excluded.
+- **211 use-item-on-creature quests** — use a quest item on a world-spawned target, e.g. **"Lazy Peons"** (awaken sleeping peons — a *friendly* target the base quester ignores entirely), the *Booterang* on Disobedient Dragonmaw Peons, a *Bat Net* on Heb'Jin, and ~200 more across Classic, TBC and WotLK. Summon-only targets (no world spawn) are deliberately excluded.
+- **10 use-item-on-gameobject quests** — use a quest item on a world-spawned object, e.g. the *Explosive Stick of Gann* on the Bael Modan Flying Machine or *Dried Seeds* at the Bubbling Fissure.
 
 > ⚠️ **Important — steps are derived from a reference DB; private servers vary. Do not AFK-bot these quests.**
 > Every coordinate and step is generated from a reference AzerothCore WotLK world DB. Private servers routinely differ in quest scripting, spawn positions, script-spawned NPCs and conditions, so an individual step may not match your server and a quest can stall. A stuck step **self-benches** (it will not break the bot), but it takes a human to notice and, if needed, finish that quest by hand. **Watch your runs** — class/use-item/explore questing here is not safe to leave unattended. You can also turn class-quest forcing off entirely with the **"Class quests"** toggle in the overlay.
