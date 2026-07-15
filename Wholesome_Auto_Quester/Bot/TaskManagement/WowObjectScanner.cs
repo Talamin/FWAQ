@@ -143,6 +143,13 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
         // the model), so the exact-point pathfind fails even though the object is right there.
         private const float UnreachableMarkMinDistance = 12f;
 
+        // True when NONE of the entry's registered tasks is combat-bound - i.e. actioning this POI is a quick
+        // interact/gather/pickup, not a fight. WAQTaskUseItemOnCreature counts as combat (it flips to kill/loot
+        // on attackable targets).
+        private bool IsQuickWorkPOI(int entry) =>
+            _scannerRegistry.TryGetValue(entry, out List<IWAQTask> tasks)
+            && tasks.All(t => !(t is WAQTaskKill) && !(t is WAQTaskKillAndLoot) && !(t is WAQTaskGrind) && !(t is WAQTaskUseItemOnCreature));
+
         private void MarkAsUnreachable(WoWObject obj)
         {
             BlacklistHelper.AddZone(obj.Position, 5, "[Scanner] Unreachable");
@@ -195,7 +202,12 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                         && !wManagerSetting.IsBlackListedZone(wowObject.Position)
                         && wowObject.Position.DistanceTo(myPos) < 60
                         /*&& WTLocation.GetZDifferential(wowObject.Position) < 15*/)
-                    .OrderBy(wowObject => wowObject.Position.DistanceTo(myPos))
+                    // Opportunistic quick-work preference: a non-combat POI (interact/read/gather/pickup) nearby
+                    // is seconds of work that clears a whole task - prefer it over a marginally-closer kill
+                    // target instead of being dragged away by the kill chain (the shrine-vs-tender race: the
+                    // shrine at 37y lost to a tender at 25y, and each kill led to the next). Quick POIs count
+                    // at half distance; kills are otherwise untouched.
+                    .OrderBy(wowObject => wowObject.Position.DistanceTo(myPos) * (IsQuickWorkPOI(wowObject.Entry) ? 0.5f : 1f))
                     .ToList();
                 listSurroundingPOIs.RemoveAll(wowObject => _scanned.ContainsKey(wowObject.Guid) && _scanned[wowObject.Guid] > 3);
 
