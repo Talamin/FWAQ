@@ -12,14 +12,15 @@ namespace Wholesome_Auto_Quester.Database
     /// <summary>
     /// One DB-derived "how to do this quest step" entry for a quest (of ANY kind — not just class quests) whose
     /// objective WAQ cannot fully derive on its own. Actions: "use-item" (use an item at a coord), "explore" (reach an
-    /// area), "use-item-on-npc" (use an item on a world-spawned creature). Coords come from quest_poi / the spell-focus
-    /// GameObject; items + mechanic from the DB (item_template on-use) and the old EasyQuest profiles.
+    /// area), "use-item-on-npc" (use an item on a world-spawned creature), "use-item-on-go" (use an item at/on a
+    /// world-spawned gameobject). Coords come from quest_poi / the spell-focus GameObject; items + mechanic from the
+    /// DB (item_template on-use). Regenerate via tools/generate_*.py (source-item heuristic, spawn-count guarded).
     /// </summary>
     public class QuestStep
     {
         public int QuestId { get; set; }
-        public string Action { get; set; } = "use-item"; // "use-item" (at a coord), "explore" (reach an area), "use-item-on-npc"
-        public int TargetEntry { get; set; }             // for "use-item-on-npc": the creature entry to use the item on
+        public string Action { get; set; } = "use-item"; // "use-item" (at a coord), "explore", "use-item-on-npc", "use-item-on-go"
+        public int TargetEntry { get; set; }             // for on-npc/on-go: the creature/gameobject entry to use the item on
         public int ItemId { get; set; }                  // the item to USE at the location
         public int CompleteItemId { get; set; }          // the item USING it grants (for diagnostics only)
         public string ItemName { get; set; }             // exact in-game name of ItemId (for the Do-Not-Sell guard)

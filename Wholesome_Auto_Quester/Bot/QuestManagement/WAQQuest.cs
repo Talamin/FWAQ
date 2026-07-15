@@ -168,6 +168,12 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
             => QuestStepsData.GetSteps(QuestTemplate.Id)
                 .FirstOrDefault(s => s.Action == "use-item-on-npc" && s.TargetEntry == creatureEntry);
 
+        // Same for "use item ON a gameobject" (e.g. the Explosive Stick of Gann on the Bael Modan Flying Machine):
+        // REPLACES the native interact task for that GO - the credit comes from the item use, not from clicking.
+        private QuestStep UseItemOnGoStepFor(int gameObjectEntry)
+            => QuestStepsData.GetSteps(QuestTemplate.Id)
+                .FirstOrDefault(s => s.Action == "use-item-on-go" && s.TargetEntry == gameObjectEntry);
+
         // The RequiredNpcOrGo creature template for a given entry, or null. These templates (with their spawns) exist
         // on the quest REGARDLESS of attackability - ModelQuestTemplate only gates the KILL OBJECTIVE on IsAttackable,
         // not the template itself. Lets us build a use-item task for a FRIENDLY target (e.g. Lazy Peon) that never gets
@@ -509,9 +515,13 @@ namespace Wholesome_Auto_Quester.Bot.QuestManagement
                     {
                         if (!ToolBox.IsObjectiveCompleted(obje.ObjectiveIndex, QuestTemplate.Id))
                         {
+                            QuestStep useOnGo = UseItemOnGoStepFor(obje.GameObjectTemplate.entry);
                             foreach (ModelGameObject gameObject in obje.GameObjectTemplate.GameObjects)
                             {
-                                AddTaskToDictionary(obje.ObjectiveIndex, new WAQTaskInteractWithGameObject(QuestTemplate, obje.GameObjectTemplate, gameObject, _continentManager));
+                                if (useOnGo != null)
+                                    AddTaskToDictionary(obje.ObjectiveIndex, new WAQTaskUseItemOnGameObject(QuestTemplate, obje.GameObjectTemplate, gameObject, useOnGo.ItemId, _continentManager));
+                                else
+                                    AddTaskToDictionary(obje.ObjectiveIndex, new WAQTaskInteractWithGameObject(QuestTemplate, obje.GameObjectTemplate, gameObject, _continentManager));
                             }
                         }
                         else

@@ -46,6 +46,16 @@ namespace Wholesome_Auto_Quester.States
         public override void Run()
         {
             var (gameObject, task) = _scanner.ActiveWoWObject;
+
+            // GameObject variant ("use-item-on-go" steps): approach into use range and use the item NEAR the GO.
+            // Quest items of this kind are spell-focus / area-targeted - proximity matters, not clicking the GO
+            // (which could trigger the object's own use effect instead of the item's).
+            if (gameObject is WoWGameObject goTarget && task is WAQTaskUseItemOnGameObject goTask)
+            {
+                RunOnGameObject(goTarget, goTask);
+                return;
+            }
+
             if (!(gameObject is WoWUnit target) || !(task is WAQTaskUseItemOnCreature useTask))
                 return;
 
@@ -104,6 +114,36 @@ namespace Wholesome_Auto_Quester.States
                 wManagerSetting.AddBlackList(target.Guid, 30000, true);
                 Logger.Log($"[UseItemOnCreature] {target.Name} awoken - blacklisted 30s, moving to next peon");
             }
+        }
+
+        private void RunOnGameObject(WoWGameObject target, WAQTaskUseItemOnGameObject useTask)
+        {
+            if (ToolBox.HostilesAreAround(target, useTask))
+                return;
+
+            if (target.Position.DistanceTo(ObjectManager.Me.Position) > 5f)
+            {
+                if (!MovementManager.InMovement)
+                    MovementManager.Go(PathFinder.FindPath(target.Position));
+                return;
+            }
+
+            MovementManager.StopMove();
+
+            if (!ItemsManager.HasItemById((uint)useTask.ItemId))
+            {
+                useTask.PutTaskOnTimeout("No item to use on gameobject", 60, true);
+                return;
+            }
+
+            Logger.Log($"[UseItemOnGO] Using item {useTask.ItemId} near {target.Name}");
+            ItemsManager.UseItem((uint)useTask.ItemId);
+            Usefuls.WaitIsCasting();
+            Thread.Sleep(1500);
+
+            // The use credited this GO (or it needs a respawn either way). Blacklist its guid briefly so the scanner
+            // moves to the next spawn; the objective-completion sweep drops the whole task once the count is done.
+            wManagerSetting.AddBlackList(target.Guid, 30000, true);
         }
     }
 }
