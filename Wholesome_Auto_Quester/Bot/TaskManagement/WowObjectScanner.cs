@@ -38,13 +38,43 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
 
         private WAQPath GetPathToObject(WoWObject wowObject)
         {
+            // Never REUSE an empty result: a pather hiccup returns a path with no points, and .Last() on it throws
+            // on the next call - the pulse's catch swallowed that, silently killing POI handling until restart.
             if (_pathToObject == null
+                || _pathToObject.Path.Count == 0
                 || _pathToObject.Path.Last().DistanceTo(wowObject.Position) > 3
                 || _pathToObject.Path.First().DistanceTo(ObjectManager.Me.Position) > 10)
             {
                 _pathToObject = ToolBox.GetWAQPath(ObjectManager.Me.Position, wowObject.Position);
             }
             return _pathToObject;
+        }
+
+        // Throttled observability: when a REGISTERED POI sits within scan range but is not scannable, say WHY
+        // (LogDebug only). Built for the "bot stands next to the Shrine of Dath'Remar and silently ignores it"
+        // class of bug - without this, every exclusion filter is invisible in the log.
+        private Timer _diagTimer = new Timer();
+        private void DiagnoseSilentPOIs(List<WoWObject> allObjects, Vector3 myPos, List<WoWObject> accepted)
+        {
+            if (!WholesomeAQSettings.CurrentSetting.LogDebug || !_diagTimer.IsReady) return;
+            _diagTimer = new Timer(10 * 1000);
+            foreach (WoWObject obj in allObjects)
+            {
+                if (!_scannerRegistry.ContainsKey(obj.Entry)) continue;
+                float dist = obj.Position.DistanceTo(myPos);
+                if (dist >= 60 || accepted.Exists(a => a.Guid == obj.Guid)) continue;
+                List<IWAQTask> tasks = _scannerRegistry[obj.Entry];
+                string why =
+                    !obj.IsValid ? "object invalid"
+                    : obj.Guid <= 0 ? "no guid"
+                    : !tasks.Any(t => t.IsValid) ? $"no valid task ({string.Join(" / ", tasks.Select(t => t.InvalidityReason ?? "?"))})"
+                    : !tasks.Any(t => t.IsObjectValidForTask(obj)) ? "object not valid for its task"
+                    : wManagerSetting.IsBlackListed(obj.Guid) ? "guid blacklisted"
+                    : wManagerSetting.IsBlackListedZone(obj.Position) ? "zone blacklisted"
+                    : (_scanned.ContainsKey(obj.Guid) && _scanned[obj.Guid] > 3) ? "scanner-banned (scanned > 3 times)"
+                    : "unknown filter";
+                Logger.LogDebug($"[ScannerDiag] {obj.Name} ({obj.Entry}) at {dist:F0}y NOT scannable: {why}");
+            }
         }
 
         public void Initialize()
@@ -168,6 +198,8 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                     .OrderBy(wowObject => wowObject.Position.DistanceTo(myPos))
                     .ToList();
                 listSurroundingPOIs.RemoveAll(wowObject => _scanned.ContainsKey(wowObject.Guid) && _scanned[wowObject.Guid] > 3);
+
+                DiagnoseSilentPOIs(allObjects, myPos, listSurroundingPOIs);
 
                 if (listSurroundingPOIs.Count > 0)
                 {
