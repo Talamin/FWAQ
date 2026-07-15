@@ -179,7 +179,12 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                     // exact point can fail while the char literally stands next to it (Shrine of Dath'Remar: benched
                     // as unreachable from 9.5y away, plus a 5y zone blacklist on top). Within interact-approach range
                     // trust proximity over the pathfinder and let the interact task close the last yards.
-                    if (closestObject.Position.DistanceTo(myPos) > UnreachableMarkMinDistance && !pathToClosestObject.IsReachable)
+                    // A COMPLETELY EMPTY path is no verdict at all: that is the pather server failing or not yet
+                    // connected (it benched the shrine 1s after product start, before "[PatherServer] Select"), not
+                    // an unreachable POI. Only a real PARTIAL path (waypoints present, target not reached) counts.
+                    if (closestObject.Position.DistanceTo(myPos) > UnreachableMarkMinDistance
+                        && !pathToClosestObject.IsReachable
+                        && pathToClosestObject.Path.Count > 1)
                     {
                         MarkAsUnreachable(closestObject);
                         Logger.LogWatchScanner($"SCANNER MARKED UNREACHABLE", watch.ElapsedMilliseconds);
@@ -202,7 +207,9 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                         {
                             WAQPath pathToNewObject = GetPathToObject(listSurroundingPOIs[i]);
 
-                            if (listSurroundingPOIs[i].Position.DistanceTo(myPos) > UnreachableMarkMinDistance && !pathToNewObject.IsReachable)
+                            if (listSurroundingPOIs[i].Position.DistanceTo(myPos) > UnreachableMarkMinDistance
+                                && !pathToNewObject.IsReachable
+                                && pathToNewObject.Path.Count > 1)
                             {
                                 MarkAsUnreachable(listSurroundingPOIs[i]);
                                 break;
