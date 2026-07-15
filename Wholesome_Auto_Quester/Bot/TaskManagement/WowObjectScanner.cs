@@ -109,6 +109,10 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
             }
         }
 
+        // Don't declare a POI unreachable when we're already this close - GO centers are often off-mesh (inside
+        // the model), so the exact-point pathfind fails even though the object is right there.
+        private const float UnreachableMarkMinDistance = 12f;
+
         private void MarkAsUnreachable(WoWObject obj)
         {
             BlacklistHelper.AddZone(obj.Position, 5, "[Scanner] Unreachable");
@@ -171,7 +175,11 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
 
                     WAQPath pathToClosestObject = GetPathToObject(closestObject);
 
-                    if (closestObject.Position.DistanceTo(myPos) > 5 && !pathToClosestObject.IsReachable)
+                    // A GameObject's center routinely sits INSIDE its model / off the navmesh, so a pathfind to the
+                    // exact point can fail while the char literally stands next to it (Shrine of Dath'Remar: benched
+                    // as unreachable from 9.5y away, plus a 5y zone blacklist on top). Within interact-approach range
+                    // trust proximity over the pathfinder and let the interact task close the last yards.
+                    if (closestObject.Position.DistanceTo(myPos) > UnreachableMarkMinDistance && !pathToClosestObject.IsReachable)
                     {
                         MarkAsUnreachable(closestObject);
                         Logger.LogWatchScanner($"SCANNER MARKED UNREACHABLE", watch.ElapsedMilliseconds);
@@ -194,7 +202,7 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                         {
                             WAQPath pathToNewObject = GetPathToObject(listSurroundingPOIs[i]);
 
-                            if (listSurroundingPOIs[i].Position.DistanceTo(myPos) > 5 && !pathToNewObject.IsReachable)
+                            if (listSurroundingPOIs[i].Position.DistanceTo(myPos) > UnreachableMarkMinDistance && !pathToNewObject.IsReachable)
                             {
                                 MarkAsUnreachable(listSurroundingPOIs[i]);
                                 break;

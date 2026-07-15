@@ -170,6 +170,7 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
                     timeInSeconds = 60 * 5;
                 }
                 Logger.Log($"Putting task {TaskName} on time out for {timeInSeconds * _timeoutMultiplicator} seconds. Reason: {reason}");
+                TaskTodoLog.Record(this, reason);   // persist suspicious benches as fix-me entries (benign reasons filtered inside)
                 _timeOutReason = reason;
                 _timeOutTimer = new Timer(timeInSeconds * 1000 * _timeoutMultiplicator);
                 if (exponentiallyLonger)
