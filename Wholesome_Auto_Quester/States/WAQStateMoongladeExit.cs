@@ -6,6 +6,7 @@ using Wholesome_Auto_Quester.Bot.TaskManagement.Tasks;
 using Wholesome_Auto_Quester.Helpers;
 using WholesomeToolbox;
 using wManager.Wow.Bot.Tasks;
+using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using Timer = robotManager.Helpful.Timer;
@@ -60,6 +61,7 @@ namespace Wholesome_Auto_Quester.States
             {
                 if (!Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause
                     || !ObjectManager.Me.IsValid
+                    || ObjectManager.Me.WowClass != WoWClass.Druid // the Cenarion courtesy flight is DRUID-ONLY gossip
                     || ObjectManager.Me.IsOnTaxi
                     || !_throttle.IsReady)
                     return false;

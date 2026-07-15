@@ -7,6 +7,7 @@ using Wholesome_Auto_Quester.Bot.TaskManagement;
 using Wholesome_Auto_Quester.Helpers;
 using WholesomeToolbox;
 using wManager;
+using wManager.Wow.Bot.Tasks;
 using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
@@ -29,6 +30,16 @@ namespace Wholesome_Auto_Quester.States
         // travelling (avg ~12 ms, spikes to ~600 ms = the felt stutter). Throttle it so the heavy work runs a
         // few times a second; between runs NeedToRun only re-validates the cached danger (cheap).
         private const int AnalysisIntervalMs = 250;
+        // Mounted travel sweeps at a lower rate: it used to not sweep AT ALL while mounted far from the
+        // destination, which is the perf-friendly choice on open roads - but riding blind INTO a mob pack
+        // (cave entrances, camps: the "Never Again" cave) means getting dazed/dismounted deep inside with a
+        // train behind. Mounted speed ~14y/s + 50y look-ahead leaves plenty of margin at 750ms.
+        private const int MountedAnalysisIntervalMs = 750;
+        // A blocker only interrupts MOUNTED travel when it is part of a PACK (>= this many fightable hostiles
+        // within PackRadius of it). Lone roadside mobs are ridden past like before - that is the point of being
+        // mounted; packs are cleared like on foot instead of dragged into the cave.
+        private const int MountedPackMinCount = 2;
+        private const float MountedPackRadius = 15f;
         // Cap how many hostiles a single sweep pathfinds against, so one analysis stays bounded even in a
         // mob-dense area (each hostile can cost a traceline + pathfind). The list is distance-sorted, so this
         // keeps the nearest ones (the actual path-blockers).
@@ -60,7 +71,6 @@ namespace Wholesome_Auto_Quester.States
                     || MovementManager.CurrentPath == null
                     || MovementManager.CurrentPath.Count <= 1
                     || (!MovementManager.InMoveTo && !MovementManager.InMovement)
-                    || (ObjectManager.Me.IsMounted && MovementManager.CurrentPath.Last().DistanceTo(ObjectManager.Me.Position) > 120)
                     || ObjectManager.Me.GetDurabilityPercent < 20)
                 {
                     _cachedUnitOnPath = (null, 0);
@@ -68,6 +78,12 @@ namespace Wholesome_Auto_Quester.States
                     UnitOnPath = (null, 0);
                     return false;
                 }
+
+                // Mounted far from the destination = cruise mode. We still sweep (at the slower mounted rate),
+                // but only a PACK on the path interrupts the ride (see MountedPackMinCount); within 120y of the
+                // destination we clear like on foot, as before.
+                bool mountedCruise = ObjectManager.Me.IsMounted
+                    && MovementManager.CurrentPath.Last().DistanceTo(ObjectManager.Me.Position) > 120;
 
                 // Heavy work (tracelines + pathfinds) only a few times per second, not every tick. The gap is
                 // re-armed AFTER the sweep, so a slow sweep in a mob-dense area can't run back-to-back and eat
@@ -80,12 +96,21 @@ namespace Wholesome_Auto_Quester.States
                         .Take(MaxHostilesPerCheck)
                         .ToList();
                     _cachedUnitOnPath = EnemyAlongTheLine(LinesToCheck, hostiles);
-                    _analysisTimer = new Timer(AnalysisIntervalMs);
+                    _analysisTimer = new Timer(mountedCruise ? MountedAnalysisIntervalMs : AnalysisIntervalMs);
                 }
 
                 // Re-validate the cached danger cheaply every tick (it can die / despawn between analyses).
                 WoWUnit unit = _cachedUnitOnPath.unit;
                 if (unit == null || !unit.IsValid || !unit.IsAlive)
+                {
+                    UnitOnPath = (null, 0);
+                    return false;
+                }
+
+                // Mounted cruise: ride past lone roadside mobs (the whole point of mounting), but never ride
+                // INTO a pack - being dazed/dismounted inside a cave/camp with a train behind is how the
+                // "Never Again" runs died. Pack = blocker + at least one more fightable hostile close to it.
+                if (mountedCruise && !IsPack(unit))
                 {
                     UnitOnPath = (null, 0);
                     return false;
@@ -104,9 +129,19 @@ namespace Wholesome_Auto_Quester.States
             Logger.Log($"WAQ Clearing path against {unitToClear.Name}");
             MovementManager.StopMove();
             MovementManager.StopMoveNewThread();
+            MountTask.DismountMount(); // clear a pack ON FOOT (no-op when not mounted)
             Fight.StartFight(unitToClear.Guid);
             UnitOnPath = (null, 0);
             _cachedUnitOnPath = (null, 0);
+        }
+
+        // At least MountedPackMinCount fightable hostiles (the blocker included) within MountedPackRadius of the
+        // blocker = a pack we must not ride into.
+        private bool IsPack(WoWUnit blocker)
+        {
+            Vector3 blockerPos = blocker.PositionWithoutType;
+            return ToolBox.GetListObjManagerHostiles()
+                .Count(u => u.PositionWithoutType.DistanceTo(blockerPos) <= MountedPackRadius) >= MountedPackMinCount;
         }
 
         private (WoWUnit unit, float pathDistance) EnemyAlongTheLine(List<Vector3> path, List<WoWUnit> hostileUnits)
