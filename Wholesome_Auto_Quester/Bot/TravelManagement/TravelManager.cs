@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using robotManager.Helpful;
+using System.Collections.Generic;
 using Wholesome_Auto_Quester.Bot.ContinentManagement;
 using Wholesome_Auto_Quester.Bot.TaskManagement.Tasks;
 using Wholesome_Auto_Quester.Database.Models;
 using Wholesome_Auto_Quester.Helpers;
 using WholesomeToolbox;
+using wManager.Wow.Enums;
 using wManager.Wow.Helpers;
 using wManager.Wow.ObjectManager;
 using static wManager.Wow.Helpers.PathFinder;
@@ -113,6 +115,23 @@ namespace Wholesome_Auto_Quester.Bot.TravelManagement
             WTSettings.AddRecommendedBlacklistZones();
             WTSettings.AddRecommendedOffmeshConnections();
             WTTransport.AddRecommendedTransportsOffmeshes();
+            AddQuestContentOffmeshConnections();
+        }
+
+        // Hand-authored links for quest POIs the pather's navmesh cannot reach (found via TaskTodos.json).
+        private void AddQuestContentOffmeshConnections()
+        {
+            // The Shrine of Dath'Remar (blood-elf starter, Sunstrider Isle): the navmesh has no link from the
+            // grass below the ledge up to the shrine plateau - a REAL partial path from ~37y out benched the
+            // interact task as "[Scanner] Unreachable" on every approach (diagnosed live 2026-07-15; endpoints =
+            // the recorded approach position from TaskTodos.json and the shrine itself).
+            OffMeshConnection shrineOfDathRemar = new OffMeshConnection(new List<Vector3>()
+            {
+                new Vector3(10389.6, -5984.2, 37.8, "None"),     // grass below the ledge (recorded approach point)
+                new Vector3(10405.8, -5946.01, 42.5082, "None"), // Shrine of Dath'Remar (GO 180516)
+            }, (int)ContinentId.Expansion01, OffMeshConnectionType.Bidirectional, true);
+            shrineOfDathRemar.Name = "Shrine of Dath'Remar ledge (Sunstrider Isle)";
+            OffMeshConnections.Add(shrineOfDathRemar);
         }
     }
 }
