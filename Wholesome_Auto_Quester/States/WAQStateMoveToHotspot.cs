@@ -17,6 +17,8 @@ namespace Wholesome_Auto_Quester.States
     {
         private ITaskManager _taskManager;
         private ITravelManager _travelManager;
+        private IWAQTask _lastPathedTask;                                       // the task the current Go was pathed for
+        private robotManager.Helpful.Timer _repathCheckTimer = new robotManager.Helpful.Timer();
         public override string DisplayName { get; set; } = "WAQ Move to hotspot";
 
         public WAQStateMoveToHotspot(ITaskManager taskManager, ITravelManager travelManager)
@@ -67,13 +69,21 @@ namespace Wholesome_Auto_Quester.States
 
             ToolBox.CheckIfZReachable(task.Location);
 
-            // Only (re)path when we're not already heading to (roughly) this hotspot. Comparing the path's last
-            // node to task.Location by EXACT equality almost never matched (the navmesh end node is a few yards
-            // off), so this used to FindPath to the same hotspot every single tick (~100 ms each). A small
-            // tolerance fixes the per-tick pathfind.
-            if (task.Location.DistanceTo(ObjectManager.Me.Position) > task.SearchRadius
-                && (!MovementManager.InMovement
-                || MovementManager.CurrentPath.Count > 0 && MovementManager.CurrentPath.Last().DistanceTo(task.Location) > 5f))
+            // (Re)path only when actually needed: movement ended, the ACTIVE TASK changed, or a throttled sanity
+            // check shows the current path isn't heading to this task anymore. The old guard compared the LIVE
+            // path end against task.Location in 3D with a 5yd tolerance - at ridge/cliff targets the navmesh end
+            // node alternates between stacked surfaces (>5yd apart in Z), so it re-pathed (with a visible
+            // StopMove) on every pulse until arrival. Task identity + 2D distance + a 10s throttle keep every
+            // legitimate re-path trigger while killing that loop.
+            bool needsPath = !MovementManager.InMovement || task != _lastPathedTask;
+            if (!needsPath && _repathCheckTimer.IsReady
+                && MovementManager.CurrentPath.Count > 0
+                && MovementManager.CurrentPath.Last().DistanceTo2D(task.Location) > 10f)
+            {
+                needsPath = true;   // current movement goes somewhere else entirely (stale path) -> replan
+            }
+
+            if (needsPath && task.Location.DistanceTo(ObjectManager.Me.Position) > task.SearchRadius)
             {
                 Logger.Log($"Moving to hotspot for {task.TaskName}");
                 if (task.Location.DistanceTo(ObjectManager.Me.Position) > 50)
@@ -82,6 +92,8 @@ namespace Wholesome_Auto_Quester.States
                 }
                 List<Vector3> pathToTask = PathFinder.FindPath(task.Location);
                 MovementManager.Go(pathToTask);
+                _lastPathedTask = task;
+                _repathCheckTimer = new robotManager.Helpful.Timer(10 * 1000);
             }
         }
     }

@@ -298,6 +298,20 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                 return;
             }
 
+            // Short-range hysteresis: the guards above only apply beyond 200yd of remaining path. Inside a dense
+            // cluster two near-equidistant tasks otherwise alternate as pile[0] with every step the char takes,
+            // and each ActiveTask switch costs a StopMove + FindPath + Go in MoveToHotspot. While the current
+            // task is still valid and the challenger sits in the same cluster, only switch once the challenger
+            // is meaningfully closer (~25%+); arriving/finishing the task ends the hold naturally.
+            if (ActiveTask != null && closestTask != ActiveTask
+                && _taskPile.Contains(ActiveTask)
+                && closestTask.Location.DistanceTo(ActiveTask.Location) < 40
+                && ActiveTask.Location.DistanceTo(myPosition) < closestTask.Location.DistanceTo(myPosition) * 1.3f)
+            {
+                Logger.LogWatchTask($"TASKM HYSTERESIS KEEP", watch.ElapsedMilliseconds);
+                return;
+            }
+
             // Avoid task snap
             if (_snappedTasks.Count > 3) _snappedTasks.Clear();
             if (closestTask != ActiveTask)
