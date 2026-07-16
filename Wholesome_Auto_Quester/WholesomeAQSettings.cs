@@ -34,6 +34,7 @@ namespace Wholesome_Auto_Quester
         public bool BlacklistDangerousZones { get; set; }
         public bool AllowStopWatch { get; set; }
         public bool TurboLoot { get; set; }
+        public bool AvoidUnderwaterPickups { get; set; }
 
         public WholesomeAQSettings()
         {
@@ -55,6 +56,7 @@ namespace Wholesome_Auto_Quester
             StopAtLevel = 80;
             BlacklistDangerousZones = true;
             TurboLoot = true;
+            AvoidUnderwaterPickups = true;   // skip submerged gather pickups (WRobot's underwater navmesh is poor); land alternatives preferred
 
             // Dev build: default the perf stopwatch ON so the [PERF ~30s] lines show up without
             // per-character fiddling (this flag has no GUI toggle). Flip back to false before any release.

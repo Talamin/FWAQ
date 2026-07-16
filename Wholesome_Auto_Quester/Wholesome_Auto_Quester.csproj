@@ -317,6 +317,8 @@
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskUseItem.cs" />
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskUseItemOnCreature.cs" />
     <Compile Include="Bot\TaskManagement\Tasks\WAQTaskUseItemOnGameObject.cs" />
+    <Compile Include="Helpers\TaskTodoLog.cs" />
+    <Compile Include="Helpers\WaterHelper.cs" />
     <Compile Include="Bot\FlightMasterManagement\WFMLogger.cs" />
     <Compile Include="Bot\FlightMasterManagement\FlightMaster.cs" />
     <Compile Include="Bot\FlightMasterManagement\WFMSettings.cs" />

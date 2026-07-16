@@ -140,6 +140,9 @@ namespace Wholesome_Auto_Quester.GUI
             list.Add(new ToggleOverlaySetting("Smooth move", "Behavior",
                 "Smoother movement between points.",
                 () => s.SmoothMove, v => s.SmoothMove = v, save));
+            list.Add(new ToggleOverlaySetting("Avoid underwater pickups", "Behavior",
+                "Skip submerged gather objects (WRobot's underwater navmesh is poor); prefer land spawns.",
+                () => s.AvoidUnderwaterPickups, v => s.AvoidUnderwaterPickups = v, save));
             list.Add(new ToggleOverlaySetting("Record unreachables", "Behavior",
                 "Remember objects that couldn't be reached, across sessions.",
                 () => s.RecordUnreachables, v => s.RecordUnreachables = v, save));

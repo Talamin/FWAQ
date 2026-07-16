@@ -161,6 +161,14 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
             return false;
         }
 
+        // Cap the escalation. Every spawn of a mob/object is its own task, so the planner already patrols them; but
+        // an UNBOUNDED doubling backoff means a spread-out or contested kill area (e.g. 17 Arcane Patrollers over
+        // ~390x360y for "Major Malfunction" - benched 39x then went cold) escalates the WHOLE objective onto
+        // multi-minute-then-hours timeouts and gets abandoned. A cap turns "give up" into "keep patrolling at a
+        // bounded cadence" (TargetNotFound base 60s -> max 4min; Unreachable base 5min -> max 20min). Genuinely
+        // dead tasks are surfaced by TaskTodoLog for manual review rather than parked forever. (Talamin)
+        private const int MaxTimeoutMultiplicator = 4;
+
         public void PutTaskOnTimeout(string reason, int timeInSeconds = 0, bool exponentiallyLonger = false)
         {
             if (!IsTimedOut)
@@ -175,7 +183,7 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
                 _timeOutTimer = new Timer(timeInSeconds * 1000 * _timeoutMultiplicator);
                 if (exponentiallyLonger)
                 {
-                    _timeoutMultiplicator *= 2;
+                    _timeoutMultiplicator = System.Math.Min(_timeoutMultiplicator * 2, MaxTimeoutMultiplicator);
                 }
             }
         }

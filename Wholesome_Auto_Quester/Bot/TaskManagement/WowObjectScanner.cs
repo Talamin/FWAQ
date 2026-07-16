@@ -143,6 +143,20 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
         // the model), so the exact-point pathfind fails even though the object is right there.
         private const float UnreachableMarkMinDistance = 12f;
 
+        // A submerged GATHER pickup we should avoid (setting-gated; land alternatives preferred). Only gather
+        // GameObjects - kills (mobs move) and use-item steps are untouched. The water verdict is cached per GUID.
+        private bool IsSubmergedGather(WoWObject o)
+        {
+            if (!WholesomeAQSettings.CurrentSetting.AvoidUnderwaterPickups) return false;
+            if (!(o is WoWGameObject)) return false;
+            if (!_scannerRegistry.TryGetValue(o.Entry, out List<IWAQTask> tasks)) return false;
+            if (tasks.Count == 0 || !tasks.All(t => t is WAQTaskGatherGameObject)) return false;
+            if (!WaterHelper.IsObjectUnderWater(o.Guid, o.Position)) return false;
+            if (WholesomeAQSettings.CurrentSetting.LogDebug)
+                Logger.LogDebug($"[Scanner] skipping underwater gather {o.Name} ({o.Entry}) at ({o.Position.X:F0},{o.Position.Y:F0},{o.Position.Z:F0})");
+            return true;
+        }
+
         // True when NONE of the entry's registered tasks is combat-bound - i.e. actioning this POI is a quick
         // interact/gather/pickup, not a fight. WAQTaskUseItemOnCreature counts as combat (it flips to kill/loot
         // on attackable targets).
@@ -210,6 +224,12 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
                     .OrderBy(wowObject => wowObject.Position.DistanceTo(myPos) * (IsQuickWorkPOI(wowObject.Entry) ? 0.5f : 1f))
                     .ToList();
                 listSurroundingPOIs.RemoveAll(wowObject => _scanned.ContainsKey(wowObject.Guid) && _scanned[wowObject.Guid] > 3);
+
+                // Skip submerged gather pickups (WRobot's underwater navmesh is poor - the bot swims in and struggles).
+                // Removing them from THIS scan makes land spawns of the same objective win automatically; if ONLY water
+                // spawns exist nearby the scan simply finds nothing (same as today), so no quest is broken. Cached per
+                // GUID, so the frame-locked liquid trace runs at most once per container.
+                listSurroundingPOIs.RemoveAll(IsSubmergedGather);
 
                 DiagnoseSilentPOIs(allObjects, myPos, listSurroundingPOIs);
 
