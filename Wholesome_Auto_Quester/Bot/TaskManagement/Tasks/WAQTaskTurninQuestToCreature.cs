@@ -39,17 +39,13 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
 
         public override bool IsObjectValidForTask(WoWObject wowObject)
         {
-            if (wowObject is WoWUnit unit)
-            {
-                return unit.IsAlive
-                    || unit.Entry == 25984 // Crashed recon pilot
-                    || unit.Entry == 3891 // Teronis' Corpse
-                    || unit.Entry == 25328 // Shadowstalker Luther
-                    || unit.Entry == 24122 // Pulroy the Archaeologist
-                    || unit.Entry == 24145 // Zedd
-                    || unit.Entry == 16852; // Sedai's Corpse
-            }
-            return false;
+            // Any unit reaching this check already matches THIS task's registered ender entry (the scanner filters
+            // by entry), so it IS our turn-in NPC - accept it whether alive or DEAD. Many enders are permanent
+            // corpses you interact with (Slain Outrunner, Sedai's Corpse, ...); the old hardcoded dead-entry
+            // allow-list missed any corpse not on it (e.g. Slain Outrunner 17849 -> "Couldn't find target" while
+            // standing right on it). A normal ender that's merely killed self-corrects: the gossip fails, the task
+            // benches briefly, and it retries once the NPC is back. (Talamin)
+            return wowObject is WoWUnit;
         }
 
         public override void PostInteraction(WoWObject wowObject)

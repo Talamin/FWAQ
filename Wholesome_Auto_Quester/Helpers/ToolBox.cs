@@ -463,6 +463,30 @@ namespace Wholesome_Auto_Quester.Helpers
             return new WAQPath(path, distance);
         }
 
+        // Path to an INTERACT/GATHER object, tolerant of an off-mesh CENTER. A shrine/altar/chest-on-a-podium has
+        // its GameObject position (the interact point) sitting on/inside its model, OFF the walkable navmesh, so a
+        // pathfind to that exact point degenerates to a partial "unreachable" path even though you can stand right
+        // next to it (the Shrine of Dath'Remar: benched Unreachable while the bot killed mobs all around it). When
+        // the direct path fails, retry to an APPROACH point pulled back toward the player by 'approach' yards -
+        // that lands on the surrounding walkable ground, within interact range, so the interact closes the gap.
+        // Falls back to the (unreachable) direct path so a genuinely isolated object is still reported unreachable.
+        public static WAQPath GetInteractPath(Vector3 from, Vector3 objectPos, float approach = 4f)
+        {
+            WAQPath direct = GetWAQPath(from, objectPos);
+            if (direct.IsReachable) return direct;
+
+            float d = from.DistanceTo(objectPos);
+            if (d < approach + 0.5f) return direct;                 // already essentially on top of it
+            float t = approach / d;                                  // pull the target back toward the player
+            Vector3 approachPoint = new Vector3(
+                objectPos.X + (from.X - objectPos.X) * t,
+                objectPos.Y + (from.Y - objectPos.Y) * t,
+                objectPos.Z + (from.Z - objectPos.Z) * t,
+                "None");
+            WAQPath alt = GetWAQPath(from, approachPoint);
+            return alt.IsReachable ? alt : direct;
+        }
+
         public static Dictionary<int, int> QuestModifiedLevel = new Dictionary<int, int>()
         {
             { 354, 3 }, // Roaming mobs, hard to find in a hostile zone

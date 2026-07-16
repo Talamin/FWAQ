@@ -36,18 +36,10 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
 
         public override bool IsObjectValidForTask(WoWObject wowObject)
         {
-            if (wowObject is WoWUnit unit)
-            {
-                return unit.IsAlive
-                    || unit.Entry == 25328 // Shadowstalker Luther
-                    || unit.Entry == 25984 // Crashed recon pilot
-                    || unit.Entry == 3891 // Teronis' Corpse
-                    || unit.Entry == 24122 // Pulroy the Archaeologist
-                    || unit.Entry == 24145 // Zedd
-                    || unit.Entry == 26896 // Nozzlerust Supply Runner
-                    || unit.Entry == 16852; // Sedai's Corpse
-            }
-            return false;
+            // Any unit here already matches THIS task's registered giver entry, so it IS our quest giver - accept
+            // it alive or DEAD. Some givers are permanent corpses you interact with; the old hardcoded dead-entry
+            // allow-list missed any not on it. A normal giver that's merely killed self-corrects via the bench.
+            return wowObject is WoWUnit;
         }
 
         public override void PostInteraction(WoWObject wowObject)

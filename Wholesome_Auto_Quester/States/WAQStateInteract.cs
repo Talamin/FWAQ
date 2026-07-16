@@ -93,7 +93,10 @@ namespace Wholesome_Auto_Quester.States
                 if (!MovementManager.InMovement)
                 {
                     Logger.Log($"Going to {gameObject.Name} for {task.TaskName}.");
-                    List<Vector3> pathToGO = PathFinder.FindPath(gameObject.Position);
+                    // Interact-tolerant path: if the object's exact center is off the navmesh (podium/model), aim
+                    // for a walkable approach point within interact range instead of stalling on a partial path to
+                    // the unreachable center (the Shrine of Dath'Remar case). Normal reachable objects are unchanged.
+                    List<Vector3> pathToGO = ToolBox.GetInteractPath(myPos, gameObject.Position, interactDistance).Path;
                     MovementManager.Go(pathToGO);
                 }
                 return;

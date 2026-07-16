@@ -121,17 +121,22 @@ namespace Wholesome_Auto_Quester.Bot.TravelManagement
         // Hand-authored links for quest POIs the pather's navmesh cannot reach (found via TaskTodos.json).
         private void AddQuestContentOffmeshConnections()
         {
-            // The Shrine of Dath'Remar (blood-elf starter, Sunstrider Isle): the navmesh has no link from the
-            // grass below the ledge up to the shrine plateau - a REAL partial path from ~37y out benched the
-            // interact task as "[Scanner] Unreachable" on every approach (diagnosed live 2026-07-15; endpoints =
-            // the recorded approach position from TaskTodos.json and the shrine itself).
-            OffMeshConnection shrineOfDathRemar = new OffMeshConnection(new List<Vector3>()
-            {
-                new Vector3(10389.6, -5984.2, 37.8, "None"),     // grass below the ledge (recorded approach point)
-                new Vector3(10405.8, -5946.01, 42.5082, "None"), // Shrine of Dath'Remar (GO 180516)
-            }, (int)ContinentId.Expansion01, OffMeshConnectionType.Bidirectional, true);
-            shrineOfDathRemar.Name = "Shrine of Dath'Remar ledge (Sunstrider Isle)";
-            OffMeshConnections.Add(shrineOfDathRemar);
+            // The Shrine of Dath'Remar (blood-elf starter, Sunstrider Isle): DISABLED as a test. The real cause
+            // wasn't a missing mesh (the bot demonstrably killed mobs all around the shrine) but the pathfind
+            // TARGET - the shrine's exact GameObject center sits off the walkable navmesh (on its raised model), so
+            // FindPath(center) degenerated to a partial "unreachable" path. That is now handled generically by the
+            // interact-approach-point fallback (ToolBox.GetInteractPath, used by the scanner + WAQStateInteract),
+            // which pathfinds to a walkable point within interact range instead of the off-mesh center. If the
+            // shrine still can't be reached with that in place, there IS a real local mesh gap here - re-enable the
+            // link below. (Talamin, 2026-07-16)
+            //
+            // OffMeshConnection shrineOfDathRemar = new OffMeshConnection(new List<Vector3>()
+            // {
+            //     new Vector3(10389.6, -5984.2, 37.8, "None"),     // grass below the ledge (recorded approach point)
+            //     new Vector3(10405.8, -5946.01, 42.5082, "None"), // Shrine of Dath'Remar (GO 180516)
+            // }, (int)ContinentId.Expansion01, OffMeshConnectionType.Bidirectional, true);
+            // shrineOfDathRemar.Name = "Shrine of Dath'Remar ledge (Sunstrider Isle)";
+            // OffMeshConnections.Add(shrineOfDathRemar);
         }
     }
 }

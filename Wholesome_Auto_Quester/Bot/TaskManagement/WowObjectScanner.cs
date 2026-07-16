@@ -42,10 +42,12 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement
             // on the next call - the pulse's catch swallowed that, silently killing POI handling until restart.
             if (_pathToObject == null
                 || _pathToObject.Path.Count == 0
-                || _pathToObject.Path.Last().DistanceTo(wowObject.Position) > 3
+                || _pathToObject.Path.Last().DistanceTo(wowObject.Position) > 6   // approach paths end ~4y off an off-mesh-center object (was 3)
                 || _pathToObject.Path.First().DistanceTo(ObjectManager.Me.Position) > 10)
             {
-                _pathToObject = ToolBox.GetWAQPath(ObjectManager.Me.Position, wowObject.Position);
+                // Interact-tolerant: if the object's exact center is off the navmesh (on a podium/model), fall back
+                // to a walkable approach point so it isn't false-flagged unreachable (the Shrine of Dath'Remar case).
+                _pathToObject = ToolBox.GetInteractPath(ObjectManager.Me.Position, wowObject.Position);
             }
             return _pathToObject;
         }
