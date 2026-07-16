@@ -29,17 +29,19 @@ namespace Wholesome_Auto_Quester.Helpers
         }
 
         /// <summary>
-        /// True if 'p' sits below the liquid surface. Traces a vertical ray through P (HitTestWater = liquid only);
-        /// TraceLineGo returns true on a liquid hit and 'surface' is the water-surface point. If the surface is at
-        /// or above P, P is submerged. No liquid in the column -> not under water.
+        /// True if 'p' is GENUINELY submerged - the liquid surface sits at least <paramref name="minDepth"/> yards
+        /// above it. Traces a vertical ray through P (HitTestWater = liquid only); TraceLineGo returns true on a
+        /// liquid hit and 'surface' is the water-surface point. The minDepth guard (not a tiny epsilon) means an
+        /// object in ankle-deep shore water - still perfectly reachable - is NOT treated as submerged; only things
+        /// under real water depth are. No liquid in the column -> not under water.
         /// </summary>
-        public static bool IsPositionUnderWater(Vector3 p, float span = 50f, float epsilon = 0.1f)
+        public static bool IsPositionUnderWater(Vector3 p, float span = 50f, float minDepth = 1.0f)
         {
             Vector3 from = new Vector3(p.X, p.Y, p.Z + span);
             Vector3 to = new Vector3(p.X, p.Y, p.Z - span);
             if (!TraceLine.TraceLineGo(from, to, CGWorldFrameHitFlags.HitTestWater, out Vector3 surface))
-                return false;                     // no liquid in the column
-            return surface.Z >= p.Z - epsilon;    // liquid surface at/above the point -> submerged
+                return false;                       // no liquid in the column
+            return surface.Z >= p.Z + minDepth;     // liquid surface >= minDepth above the point -> genuinely submerged
         }
     }
 }

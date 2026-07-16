@@ -161,13 +161,19 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
             return false;
         }
 
-        // Cap the escalation. Every spawn of a mob/object is its own task, so the planner already patrols them; but
-        // an UNBOUNDED doubling backoff means a spread-out or contested kill area (e.g. 17 Arcane Patrollers over
-        // ~390x360y for "Major Malfunction" - benched 39x then went cold) escalates the WHOLE objective onto
-        // multi-minute-then-hours timeouts and gets abandoned. A cap turns "give up" into "keep patrolling at a
-        // bounded cadence" (TargetNotFound base 60s -> max 4min; Unreachable base 5min -> max 20min). Genuinely
-        // dead tasks are surfaced by TaskTodoLog for manual review rather than parked forever. (Talamin)
-        private const int MaxTimeoutMultiplicator = 4;
+        // Cap the escalation, KIND-AWARE via the base timeout (the base value already encodes the kind, so we avoid
+        // threading a TaskFailureKind through the interface + every task's shadowed PutTaskOnTimeout):
+        //  - SHORT base (<= 150s, e.g. TargetNotFound 60s) = the "patrol" kind. Every spawn is its own task so the
+        //    planner already patrols them; an UNBOUNDED doubling backoff made a spread-out/contested kill area (17
+        //    Arcane Patrollers over ~390x360y, "Major Malfunction" benched 39x) go cold and abandon the quest. Cap
+        //    TIGHT (x4 -> ~4min) so it keeps patrolling at a bounded cadence.
+        //  - LONG base (> 150s, e.g. Unreachable 5min / SurroundedByHostiles 10min / Stuck 15min) = genuinely broken
+        //    or dangerous. A tight x4 cap would pull the bot back to a broken high-priority (e.g. class) objective
+        //    every ~20min forever; a looser x16 cap lets it back off (Unreachable -> up to 80min) while still never
+        //    growing without bound (Timer-overflow hygiene). Genuinely dead tasks are surfaced by TaskTodoLog.
+        private const int PatrolBaseSeconds = 150;    // base <= this = patrol kind (retry often)
+        private const int PatrolMaxMultiplicator = 4;
+        private const int BrokenMaxMultiplicator = 16;
 
         public void PutTaskOnTimeout(string reason, int timeInSeconds = 0, bool exponentiallyLonger = false)
         {
@@ -183,7 +189,8 @@ namespace Wholesome_Auto_Quester.Bot.TaskManagement.Tasks
                 _timeOutTimer = new Timer(timeInSeconds * 1000 * _timeoutMultiplicator);
                 if (exponentiallyLonger)
                 {
-                    _timeoutMultiplicator = System.Math.Min(_timeoutMultiplicator * 2, MaxTimeoutMultiplicator);
+                    int cap = timeInSeconds <= PatrolBaseSeconds ? PatrolMaxMultiplicator : BrokenMaxMultiplicator;
+                    _timeoutMultiplicator = System.Math.Min(_timeoutMultiplicator * 2, cap);
                 }
             }
         }

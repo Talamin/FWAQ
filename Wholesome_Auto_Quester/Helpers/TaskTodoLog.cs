@@ -23,6 +23,8 @@ namespace Wholesome_Auto_Quester.Helpers
     {
         private static readonly object _lock = new object();
         private static Dictionary<string, TodoEntry> _entries;   // key -> entry, lazy-loaded
+        private const double SaveThrottleSeconds = 10;           // throttle whole-file rewrites for count-bumps
+        private static DateTime _lastSave = DateTime.MinValue;
 
         private static string FilePath => Path.Combine(Others.GetCurrentDirectory, "Settings", "WAQ", "TaskTodos.json");
 
@@ -50,8 +52,13 @@ namespace Wholesome_Auto_Quester.Helpers
                     string now = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                     if (_entries.TryGetValue(key, out TodoEntry entry))
                     {
+                        // Repeat of a known fix-me: just bump the counter. This is the noisy path (a churning
+                        // spread-mob area re-benches every few seconds), so THROTTLE the whole-file rewrite to
+                        // at most once per SaveThrottle - the count/last-seen are in memory and get flushed soon.
                         entry.Count++;
                         entry.LastSeen = now;
+                        if ((DateTime.Now - _lastSave).TotalSeconds >= SaveThrottleSeconds)
+                            Save();
                     }
                     else
                     {
@@ -72,9 +79,8 @@ namespace Wholesome_Auto_Quester.Helpers
                         };
                         _entries[key] = entry;
                         Logger.Log($"[TaskTodo] NEW fix-me entry: {task.TaskName} — {reason} (Settings\\WAQ\\TaskTodos.json)");
+                        Save();   // a NEW distinct fix-me is rare and worth persisting immediately
                     }
-
-                    Save();
                 }
             }
             catch (Exception e)
@@ -105,6 +111,7 @@ namespace Wholesome_Auto_Quester.Helpers
 
         private static void Save()
         {
+            _lastSave = DateTime.Now;
             Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
             List<TodoEntry> list = _entries.Values
                 .OrderByDescending(e => e.Count)
